@@ -259,3 +259,4 @@ def smartlinks(value, arg=None):
     
 def smarturl(value, arg=None):
     value = smartlink_finder.sub(SmartLinksParser(arg).parse_url, value)
+    return value
