@@ -6,7 +6,9 @@ from django.conf import settings
 from django import template
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
-from django.utils.encoding import smart_str
+from django.utils.encoding import smart_str, force_unicode
+
+
 
 from ..utils import smartlinksconf, get_field_names
 
@@ -256,7 +258,8 @@ def smartlinks(value, arg=None):
     value = smartlink_finder.sub(SmartLinksParser(arg).parse_link, value)
     value = smartembed_finder.sub(SmartEmbedsParser(arg).parse_embed, value)
     return mark_safe(value)
-    
+
+@register.filter
 def smarturl(value, arg=None):
     value = smartlink_finder.sub(SmartLinksParser(arg).parse_url, value)
-    return value
+    return force_unicode(value)
