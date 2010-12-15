@@ -112,7 +112,10 @@ class SmartLinksParser(object):
                     if "disambiguator" in model.smartlink_opts and self.disambiguator:
                         dmb = model.smartlink_opts["disambiguator"]
                         qs[dmb.generate()] = self.disambiguator
-                        return model.objects.get(**qs) # try again, it just might give us a single result!
+                        try:
+                            return model.objects.get(**qs) # try again, it just might give us a single result!
+                        except model.MultipleObjectsReturned:
+                            return models.objects.filter(**qs)[0] # Guess not
                     else:
                         raise 
         else:
