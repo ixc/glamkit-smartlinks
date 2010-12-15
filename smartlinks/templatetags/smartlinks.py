@@ -28,7 +28,7 @@ smartlink_finder = re.compile(r"""
                             \[
                                 \s* (?P<SearchTerm>[^]\[]+) \s*   # query string
                             \] \s*
-                        ((?P<Options>[\w\. /\\|\(\)=]+))?                    # options
+                        (?P<Options>[^\]]*)                    # options
                     \]
                     """,
                     re.VERBOSE)
