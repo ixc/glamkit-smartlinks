@@ -115,7 +115,7 @@ class SmartLinksParser(object):
                         try:
                             return model.objects.get(**qs) # try again, it just might give us a single result!
                         except model.MultipleObjectsReturned:
-                            return models.objects.filter(**qs)[0] # Guess not
+                            return model.objects.filter(**qs)[0] # Guess not
                     else:
                         raise 
         else:
