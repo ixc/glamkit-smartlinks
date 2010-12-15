@@ -10,7 +10,7 @@ from django.utils.encoding import smart_str, force_unicode
 
 
 
-from ..utils import smartlinksconf, get_field_names
+from ..utils import smartlinksconf, get_field_names, html2text
 
 register = template.Library()
 
@@ -176,7 +176,7 @@ class SmartLinksParser(object):
         """
         self.match = match
         
-        self.search_term = match.group("SearchTerm").strip()
+        self.search_term = html2text(match.group("SearchTerm").strip())
         self.model_name = match.group("ModelName")
         self.key_term = match.group("KeyTerm")
         if self.key_term:
