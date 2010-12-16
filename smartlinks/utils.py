@@ -1,5 +1,6 @@
+﻿# -*- coding: utf-8 -*-
+
 import re
-from htmlentitydefs import name2codepoint as htmlentities
 
 from django.db.models.loading import get_model
 from django.utils.datastructures import SortedDict
@@ -194,31 +195,4 @@ def words2num(s):
         
         return up2million(tokens)
 
-
-# Add the apostrophe to HTML entities to get the full set of 253 defined by XHTML
-htmlentities.update({'apos': 39})
-
-escapedhtml = re.compile(r'&([a-zA-Z0-9#]+?);')
-numeric = re.compile(r'^#0*(x[0-9A-F]+|\d+)$', re.I)
-
-# Decodes single HTML character entities into unicode characters
-def htmldecode(value):
-    val = value.group(1)
-    num = numeric.match(val)
-    if num:
-        numvalue = num.group(1)
-        if numvalue[0].lower() == 'x': numvalue = '0%s' % numvalue
-        return unichr(int(numvalue,0))
-    elif val in htmlentities:
-        return unichr(htmlentities[val])
-    else:
-        return '&%s;' % val
-
-# Converts text with HTML entities into Unicode
-def html2text(text):
-    # Fix double-encoded HTML character entities
-    text = text.replace('&amp;', '&')
-    # Convert HTML character entities
-    text = escapedhtml.sub(htmldecode, text)
-    return text
     

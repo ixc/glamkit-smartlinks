@@ -10,14 +10,18 @@ from django.utils.encoding import smart_str, force_unicode
 
 
 
-from ..utils import smartlinksconf, get_field_names, html2text
+from ..utils import smartlinksconf, get_field_names
 
 register = template.Library()
 
 smartlinked_models = None
+search_term_filter = lambda x: x
 def configure():
     global smartlinked_models
     smartlinked_models = smartlinksconf(settings.SMARTLINKS)
+    global search_term_filter
+    if callable(getattr(settings, 'SMARTLINKS_FILTER', None)):
+        search_term_filter = settings.SMARTLINKS_FILTER
 
 smartlink_finder = re.compile(r"""
                     (?<![\\])                                        # do NOT match things preceded by a slash
@@ -105,7 +109,7 @@ class SmartLinksParser(object):
                     qs = {} # reset it (so we can try search_field)
 
             if search_field:
-                qs[search_field.generate()] = self.search_term
+                qs[search_field.generate()] = self.clean_search_term
                 try:
                     return model.objects.get(**qs) # let's pray that wouldn't raise a FieldError...
                 except model.MultipleObjectsReturned:
@@ -123,9 +127,9 @@ class SmartLinksParser(object):
                 obj = model.objects.get_from_smartlink(self.search_term, disambiguator=self.disambiguator, key_term=self.key_term, arg=self.arg)
             else:
                 if "slug" in fields:
-                    obj = model.objects.get(slug=slugify(self.search_term)) # what if model does not have an attribute 'slug'?
+                    obj = model.objects.get(slug=slugify(self.clean_search_term)) # what if model does not have an attribute 'slug'?
                 elif model.smartlink_opts.get("fallback_to_pk", None):
-                    obj = model.objects.get(pk=slugify(self.search_term))
+                    obj = model.objects.get(pk=slugify(self.clean_search_term))
                 # we should never get to the else statement. ever.
             return obj
         
@@ -176,7 +180,8 @@ class SmartLinksParser(object):
         """
         self.match = match
         
-        self.search_term = html2text(match.group("SearchTerm").strip())
+        self.search_term = match.group("SearchTerm").strip()
+        self.clean_search_term = search_term_filter(self.search_term)
         self.model_name = match.group("ModelName")
         self.key_term = match.group("KeyTerm")
         if self.key_term:
