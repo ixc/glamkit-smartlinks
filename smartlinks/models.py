@@ -87,5 +87,8 @@ class IndexEntry(models.Model):
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')
 
+    def __unicode__(self):
+        return "'%s' for (%s-%s)" % (self.value, self.content_type, self.object_id)
+
     class Meta:
         unique_together = (("value", "content_type", "object_id",),)

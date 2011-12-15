@@ -4,13 +4,13 @@ from smartlinks.management.commands.reset_smartlink_index import recreate_index
 
 from smartlinks.models import IndexEntry
 from smartlinks.index_conf import IndexConf
-from smartlinks import register
+from smartlinks import register, register_smart_link
 
 from smartlinks.tests.models import Movie
 
 class IndexResetTest(TestCase):
     def testIndexRecreation(self):
-        register(('m', 'movie'), IndexConf(
+        register_smart_link(('m', 'movie'), IndexConf(
             Movie.objects,
             searched_fields=('title',)
             )
@@ -29,7 +29,7 @@ class IndexResetTest(TestCase):
 
         # Now let's tinker with the smartlink index and see whether it would
         # be able to restore itself to the initial state.
-        IndexEntry.objects.delete()
+        IndexEntry.objects.all().delete()
 
         IndexEntry.objects.create(
             value="bogus",
@@ -51,9 +51,9 @@ class IndexResetTest(TestCase):
 
         # As only one field is searched, it should create one entry per
         # :py:class:`Movie` object.
-        self.assertEqual(IndexEntry.objects.filter(object_id=self.m1.pk),
+        self.assertEqual(IndexEntry.objects.filter(object_id=self.m1.pk).count(),
          1)
 
-        self.assertEqual(IndexEntry.objects.filter(object_id=self.m2.pk),
+        self.assertEqual(IndexEntry.objects.filter(object_id=self.m2.pk).count(),
          1)
 

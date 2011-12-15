@@ -1,6 +1,6 @@
 import inspect
 
-from django.db import models
+from django.db.models import signals
 
 from smartlinks.index_conf import smartlinks_conf
 
@@ -49,28 +49,33 @@ def register_smart_link(shortcuts, conf):
     model = conf.queryset.model
 
     # Sanity configuration checks.
-    for fieldset in conf['searched_fields']:
+    for fieldset in conf.searched_fields:
         for fieldname in fieldset:
-            if not hasattr(model, fieldname):
+            if fieldname not in ('pk', '__unicode__') and \
+               not hasattr(model, fieldname)\
+               and not fieldname in model._meta.get_all_field_names():
+
                 raise IncorrectlyConfiguredSmartlinkException(
                     "Model '%s' does not have attribute '%s'" % (
                         model, fieldname
                         )
                 )
+            
+            if hasattr(model, fieldname):
+                value = getattr(model, fieldname)
+                if callable(value):
+                    arg_info = inspect.getargspec(value)
 
-            value = getattr(model, fieldname)
-            if callable(value):
-                arg_info = inspect.getargspec(value)
-
-                # All functions which are returning the value for the
-                # smartlink should have one and only one argument - 'self'.
-                if len(arg_info.args) - len(arg_info.defaults) != 1:
-                    raise IncorrectlyConfiguredSmartlinkException(
-                        """Function '%s' in model '%s' configured as smartlink search
-                        value has incorrect number of arguments.""" % (
-                            fieldname, model
+                    # All functions which are returning the value for the
+                    # smartlink should have one and only one argument - 'self'.
+                    defaults = arg_info.defaults or []
+                    if len(arg_info.args) - len(defaults) != 1:
+                        raise IncorrectlyConfiguredSmartlinkException(
+                            """Function '%s' in model '%s' configured as smartlink search
+                            value has incorrect number of arguments.""" % (
+                                fieldname, model
+                            )
                         )
-                    )
 
     # Make all provided shortcuts point to the same
     # configuration.
@@ -81,7 +86,7 @@ def register_smart_link(shortcuts, conf):
         smartlinks_conf[name] = conf
 
     # Connect post-save/post-delete signals.
-    for signal in [models.signals.post_save, models.signals.post_delete]:
+    for signal in [signals.post_save, signals.post_delete]:
         signal.connect(
             conf.update_index_for_object,
             sender=model

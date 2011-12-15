@@ -11,6 +11,8 @@ from .models import *
 from .parser import *
 from .management import *
 
+import smartlinks.index_conf as index_conf
+
 class Event(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200)
@@ -31,12 +33,16 @@ class Event(models.Model):
 
 class RegistrationTest(TestCase):
     def setUp(self):
-        pass
+        while index_conf.smartlinks_conf.keys():
+            index_conf.smartlinks_conf.pop(
+                index_conf.smartlinks_conf.keys()[0])
 
     def tearDown(self):
         # Clean global configuration.
-        global smartlinks_conf
-        smartlinks_conf = {}
+        while index_conf.smartlinks_conf.keys():
+            index_conf.smartlinks_conf.pop(
+                index_conf.smartlinks_conf.keys()[0])
+
 
     def testRegisterLinks(self):
         conf = IndexConf(queryset=Event.objects)
@@ -65,12 +71,14 @@ class RegistrationTest(TestCase):
             'event': conf
         })
 
+        # TODO -- check sending/receiving signals
+
     def testSanityChecks(self):
         # No such field on the model => exception.
         self.assertRaises(IncorrectlyConfiguredSmartlinkException,
             register_smart_link,
             ('e',),
-            IndexConf(Event.object, searched_fields=('blah',)))
+            IndexConf(Event.objects, searched_fields=('blah',)))
 
         # Searched field is a function with too many argument => exception.
         self.assertRaises(IncorrectlyConfiguredSmartlinkException,
@@ -80,9 +88,9 @@ class RegistrationTest(TestCase):
 
         # While registering the callable with no args should work just fine.
         register_smart_link(('zzz',), IndexConf(Event.objects,
-                                                searched_fields=('my_func_without_args')))
+                                        searched_fields=('my_func_without_args',)))
 
         # We also can't register the model with same shortcut twice.
-        self.assertRaises(IncorrectlyConfiguredSmartlinkException,
+        self.assertRaises(AlreadyRegisteredSmartlinkException,
             register_smart_link,
             ('zzz',), IndexConf(Event.objects))

@@ -1,3 +1,4 @@
+from django.db.utils import IntegrityError
 from django.test import TestCase
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
@@ -16,7 +17,7 @@ class IndexConfTest(TestCase):
         self.m = Movie.objects.create(
             title="Mad Max",
             slug="mad-max",
-            year=1000
+            year=1984
         )
 
         self.secret_movie = Movie.objects.create(
@@ -49,20 +50,40 @@ class IndexConfTest(TestCase):
             )
         )
 
+        self.movie_index_conf.update_index_for_object(Movie,
+            self.m,
+            created=True)
+
+        self.movie_index_conf.update_index_for_object(Movie,
+            self.harry1,
+            created=True)
+
+        self.movie_index_conf.update_index_for_object(Movie,
+            self.harry2,
+            created=True)
+
+        self.movie_index_conf.update_index_for_object(Movie,
+            self.secret_movie,
+            created=True)
+
+    def tearDown(self):
+        IndexEntry.objects.all().delete()
+
     def testTemplates(self):
         # Test normal template.
         obj = type("MyObj", (object,), dict(
-            __unicode__ = lambda: "obj",
-            get_absolute_url = lambda: "google.com"
+            __unicode__ = lambda self: u"obj",
+            get_absolute_url = lambda self: "google.com"
         ))
 
         self.assertEqual(
             self.movie_index_conf.template.render(
                 Context({
                     'obj': obj,
-                    "verbose_text": "verbose_text"
+                    "verbose_text": u"verbose_text"
                 })
-            ), "".join(
+            ),
+            "".join(
                 ['<a href="google.com" title="obj">',
                  'verbose_text',
                  '</a>']
@@ -91,7 +112,7 @@ class IndexConfTest(TestCase):
 
         # Disallowed embeds template.
         self.assertEqual(
-            self.movie_index_conf.template.render(
+            self.movie_index_conf.disallowed_embed_template.render(
                 Context({
                     "smartlink_text": "smartlink text"
                 })
@@ -102,9 +123,9 @@ class IndexConfTest(TestCase):
 
         # No model found template
         self.assertEqual(
-            self.movie_index_conf.template.render(
+            self.movie_index_conf.unresolved_template.render(
                 Context({
-                    "smartlink_text": "smartlink_text"
+                    "verbose_text": "smartlink_text"
                 })
             ),
             '<span class="smartlinks-unresolved">smartlink_text</span>'
@@ -128,7 +149,7 @@ class IndexConfTest(TestCase):
 
         self.assertEqual(
             self.movie_index_conf.find_object(
-                query=self.m.pk
+                query=unicode(self.m.pk)
             ),
             self.m
         )
@@ -150,6 +171,9 @@ class IndexConfTest(TestCase):
         )
 
         # Non-public movies can not be smartlinked to.
+
+        # TODO -- so apparently our public-queryset
+        # thing isn't working.
         self.assertRaises(
             IndexEntry.DoesNotExist,
             lambda: self.movie_index_conf.find_object(
@@ -170,16 +194,16 @@ class IndexConfTest(TestCase):
             self.movie_index_conf.find_object(
                 query="Dirty Harry: 1976"
             ),
-            self.harry1
+            self.harry2
         )
 
     def testUpdateIndexForObject(self):
         # Dirty Harry 1971 would have:
         expected_entries = (
-            'dirtyharry',
-            'ditryharry1971',
-            self.harry1.pk,
-            'dirtyharryreleasedin1971',
+            u'dirtyharry',
+            u'dirtyharry1971',
+            unicode(self.harry1.pk),
+            u'dirtyharryreleasedin1971',
         )
 
         # Let's check items first.
@@ -221,10 +245,10 @@ class IndexConfTest(TestCase):
         self.harry1.slug = "awesome-harry"
 
         expected_entries = (
-            'awesomeharry',
-            'awesomeharry1971',
-            self.harry1.pk,
-            'awesomeharryreleasedin1971',
+            u'awesomeharry',
+            u'awesomeharry1971',
+            unicode(self.harry1.pk),
+            u'awesomeharryreleasedin1971',
         )
 
         # ...and the editing should work as well.

@@ -13,7 +13,7 @@ class ResetSmartLinkIndex(BaseCommand):
         recreate_index()
 
 def recreate_index():
-    IndexEntry.objects.delete()
+    IndexEntry.objects.all().delete()
     seen = []
     for conf in smartlinks_conf.values():
         if conf in seen: continue

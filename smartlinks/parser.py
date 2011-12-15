@@ -4,6 +4,7 @@ from django.utils.safestring import mark_safe
 from django.template.context import Context
 
 from smartlinks.models import IndexEntry
+from smartlinks.index_conf import IndexConf
 
 class Parser(object):
     """
@@ -28,13 +29,12 @@ class Parser(object):
 
         :returns:
         :rtype: SafeString
-
-        :throws: NoSmartLinkConfigurationRegisteredException
         """
         model = match.group("ModelName")
         query = match.group("Query").strip()
 
-        verbose_text = (match.group('VerboseText') or match.group('Query')).strip()
+        verbose_text = (match.groupdict().get('VerboseText',
+                None) or match.group('Query')).strip()
 
         # Sets self.object and self.template, or bails early.
 
@@ -57,6 +57,7 @@ class Parser(object):
         try:
             if model:
                 conf = self.smartlinks_conf[model]
+                obj = conf.find_object(query)
 
             else:
                 # Model is not specified, let's try to find it.
@@ -64,24 +65,25 @@ class Parser(object):
                 # are tried in the specified order.
 
                 seen = []
-                found = False
-                for conf in smartlinks_conf.values():
+                for conf in self.smartlinks_conf.values():
 
                     # Many configuration occur in .values()
                     # multiple times.
                     if conf in seen:
                         continue
+
                     try:
-                        obj = conf.find_object(model, query)
-                        found = True
+                        obj = conf.find_object(query)
+                        break
                     except IndexEntry.DoesNotExist:
                         continue
                     seen.append(conf)
                 else:
-                    raise NoSmartLinkConfigurationRegisteredException()
-
-                if not found:
-                    raise
+                    return IndexConf.model_unresolved_template.render(
+                        Context(dict(
+                            verbose_text=verbose_text
+                        ))
+                    )
 
             template = conf.template
 
@@ -142,7 +144,7 @@ class SmartEmbedParser(Parser):
             \s*
             ((?P<ModelName>\w+)\s*\->)?  # Optional model name at the start
             (?P<Query>[^\]\|]+)
-            \|(?P<AttrName>\w+) # Attribute we are getting
+            \|\s*(?P<AttrName>\w+) # Attribute we are getting
                                  # from the object.
                                  # eg {{ Mad max | Image }}
                                  # or {{ Mad max | Video }}
@@ -186,17 +188,13 @@ class SmartEmbedParser(Parser):
         args = []
 
         if options:
-
             # Additional options are passed for the method call.
-            for option in options.split("|"):
+            for option in options.strip("| ").split("|"):
                 option = option.strip()
                 if "=" in option:
                     key, value = option.split("=")
-                    kwargs[key] = value
+                    kwargs[key.strip()] = value.strip()
                 else:
                     args.append(option)
 
         return getattr(self.obj, attr)(*args, **kwargs)
-
-class NoSmartLinkConfigurationRegisteredException(Exception):
-    pass

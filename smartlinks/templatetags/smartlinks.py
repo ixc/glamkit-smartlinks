@@ -1,7 +1,7 @@
 from django import template
 
-from smartlinks import smartlinks_conf
-from smartlinks.parser import SmartLinkParser, SmartEmbedParser
+from .. import smartlinks_conf
+from ..parser import SmartLinkParser, SmartEmbedParser
 
 register = template.Library()
 

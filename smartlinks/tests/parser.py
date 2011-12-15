@@ -1,12 +1,10 @@
 from django.utils.safestring import SafeString
-import mox
 import re
 
 from django.test import TestCase
 from django.template.context import Context
 
-from smartlinks.parser import SmartLinkParser, SmartEmbedParser, Parser,\
-    NoSmartLinkConfigurationRegisteredException
+from smartlinks.parser import SmartLinkParser, SmartEmbedParser, Parser
 from smartlinks.index_conf import IndexConf
 from smartlinks.models import IndexEntry
 
@@ -17,14 +15,13 @@ class MyIndexConf(IndexConf):
 
     def find_object(self, query):
         if query == "no such object":
-            raise IndexEntry.DoesNotExist
+            raise IndexEntry.DoesNotExist()
         if query == "more then one":
-            raise IndexEntry.MultipleObjectsReturned
+            raise IndexEntry.MultipleObjectsReturned()
         return "Object: %s" % query
 
 class ParserTest(TestCase):
     def setUp(self):
-        self.mox = mox.Mox()
         self.conf = MyIndexConf()
         self.p = Parser(dict(
             movie=self.conf,
@@ -33,7 +30,7 @@ class ParserTest(TestCase):
 
     def testProcessSmartLinks(self):
         input_text = "hello1 hello2 hello3"
-        self.p.parse = lambda self, match: "*"
+        self.p.parse = lambda match: "*"
         self.p.finder = re.compile(r"\w+")
         out = self.p.process_smartlinks(input_text)
 
@@ -46,7 +43,7 @@ class ParserTest(TestCase):
 
     def testParseNormal(self):
         self.p.parse(self._create_match(
-            model="   movie ",
+            model="movie",
             query=" Mad Max ",
             verbose_text="    the awesome movie   "
         ))
@@ -66,13 +63,14 @@ class ParserTest(TestCase):
             IndexConf.template
         )
 
+        # TODO - error
         self.assertEqual(
             self.p.verbose_text,
             "the awesome movie"
         )
 
         self.p.parse(self._create_match(
-            model="   movie ",
+            model="movie",
             query=" Mad Max ",
         ))
 
@@ -83,11 +81,10 @@ class ParserTest(TestCase):
         )
 
     def testParseAmbiguous(self):
-        ret = self.p.parse(self._create_match(
-            model="   movie ",
-            query=" Mad Max ",
-            verbose_text="    the awesome movie   "
-        ))
+        ret = self.p.parse(
+            SmartLinkParser.finder.match(
+                "[[ movie->more then one | the awesome movie ]]")
+        )
 
         self.assertEqual(
             ret,
@@ -118,7 +115,7 @@ class ParserTest(TestCase):
 
     def testParseNotFound(self):
         ret = self.p.parse(self._create_match(
-            model="   movie ",
+            model="movie",
             query=" no such object ",
             verbose_text="    the awesome movie   "
         ))
@@ -136,7 +133,7 @@ class ParserTest(TestCase):
 
     def testParseNoModel(self):
         self.p.parse(self._create_match(
-            query=" no such object ",
+            query=" obj ",
             verbose_text="    the awesome movie   "
         ))
         self.assertEqual(
@@ -150,19 +147,28 @@ class ParserTest(TestCase):
 
     def testParseNoConfig(self):
         poor_parser = Parser({})
-        self.assertRaises(NoSmartLinkConfigurationRegisteredException,
-                          poor_parser.parse, self._create_match())
+        self.assertEqual(poor_parser.parse(SmartLinkParser.finder.match(
+                "[[ mad max ]]")),
+            IndexConf.model_unresolved_template.render(Context({
+                'verbose_text': 'mad max'
+            }))
+        )
 
     def _create_match(self, model=None, query="", verbose_text=None):
         return type(
             "Match",
             (object,),
             {
-                "group": lambda key: dict(
+                "group": lambda self, key: dict(
                     ModelName=model,
                     Query=query,
                     VerboseText=verbose_text
-                )[key]
+                )[key],
+                "groupdict": lambda self: dict(
+                    ModelName=model,
+                    Query=query,
+                    VerboseText=verbose_text
+                )
             }
         )()
 
@@ -198,7 +204,7 @@ class SmartLinkParserTest(TestCase):
         )
 
         self.assertEqual(
-            match.group("ModelName").strip(),
+            match.group("ModelName"),
             None
         )
 
@@ -254,6 +260,7 @@ class SmartLinkParserTest(TestCase):
             IndexConf.template.render(
                 Context(dict(
                     verbose_text="Mad Max",
+                    obj="Object: Mad Max"
                 ))
             )
         )
@@ -297,14 +304,14 @@ class SmartEmbedParserTest(TestCase):
         )
 
         self.assertEqual(
-            match.group("Options").strip(),
+            match.group("Options").strip(" |"),
             "crop"
         )
 
         match = m.match("{{ Mad Max | Image | crop | size = 300 }}")
 
         self.assertEqual(
-            match.group("Options").strip(),
+            match.group("Options").strip(" |"),
             "crop | size = 300"
         )
 
@@ -322,8 +329,8 @@ class SmartEmbedParserTest(TestCase):
                 if query == "no such object":
                     raise IndexEntry.DoesNotExist()
                 return type("MyObject", (object,), dict(
-                    image=lambda *args, **kw: (args, kw),
-                ))
+                    image=lambda self, *args, **kw: (args, kw),
+                ))()
 
         parser = SmartEmbedParser({
             "movie": TestEmbedIndexConf(
@@ -347,7 +354,7 @@ class SmartEmbedParserTest(TestCase):
 
         # Mocked functions returns things it was passed to.
         self.assertEqual(parser.parse(match),
-            (("crop",), {"size": "300", "alignment": "crop"})
+            (("crop",), {"size": "300", "alignment": "north"})
         )
 
         # Test unallowed attribute

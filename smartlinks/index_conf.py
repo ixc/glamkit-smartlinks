@@ -77,7 +77,7 @@ class IndexConf(object):
     searched_fields=('pk', '__unicode__', 'slug', 'title')
 
     def __init__(self,
-        queryset,
+        queryset=None,
         searched_fields=None,
         embeddable_attributes=(),
         template=None,
@@ -89,11 +89,13 @@ class IndexConf(object):
 
         self.queryset = queryset
 
+        if searched_fields:
+            self.searched_fields = searched_fields
+
         # Hack to make iteration over fields easier and more unified -
         # strings are turned into one-element tuple.
-        if searched_fields:
-            self.searched_fields = [f if isinstance(f, tuple)
-                                    else (f,) for f in searched_fields]
+        self.searched_fields = [f if isinstance(f, tuple)
+                                    else (f,) for f in self.searched_fields]
 
         self.embeddable_attributes = embeddable_attributes
 
@@ -125,26 +127,24 @@ class IndexConf(object):
         """
         query = dict(
             value = self._stem(query),
-            content_type = self.queryset.model
+            content_type=ContentType.objects.get_for_model(self.queryset.model)
         )
 
         try:
             return IndexEntry.objects.get(**query).content_object
         except IndexEntry.DoesNotExist:
-
             # A fallback in case we can't find an exact match -
             # let's just contend ourselves with STARTSWITH.
             query['value__startswith'] = query['value']
             del query['value']
             return IndexEntry.objects.get(**query).content_object
 
-    # TODO - create meaningful flag names for those
-    def update_index_for_object(self, model, instance, created='deleteme'):
+    def update_index_for_object(self, sender, instance, created='deleteme', **kw):
         """
         Update index for the updated/deleted/created object.
         Creates/Removes SmartLinkIndex objects.
 
-        :param model: SmartLinked model, subclass of Django's models.Model.
+        :param sender: SmartLinked model, subclass of Django's models.Model.
         :param instance: Instance of the model being processed for SmartLink
         caching.
         :param created: a flag.
@@ -158,17 +158,17 @@ class IndexConf(object):
                 get called and
         """
         deleted = created == 'deleteme'
-        content_type = ContentType.objects.get_for_model(model)
+        content_type = ContentType.objects.get_for_model(sender)
 
         if not created or deleted:
 
             # Delete the previously cached objects
-            self.objects.delete(
+            IndexEntry.objects.filter(
                 content_type=content_type,
                 object_id=instance.pk
-            )
+            ).delete()
 
-        if not deleted:
+        if not deleted and self.queryset.filter(pk=instance.pk):
 
             # Update the index with new entries.
             for search_string in self._get_search_strings_for_index(instance):
@@ -184,13 +184,18 @@ class IndexConf(object):
         Assumes the index is empty.
         """
         if self.queryset:
-            for instance in self.queryset:
-                self.update_index_for_object(instance.model, instance, created=True)
+            for instance in self.queryset.all():
+                self.update_index_for_object(instance.__class__,
+                                             instance, created=True)
 
     def _get_search_strings_for_index(self, instance):
         """
         Get the searchable strings according to the configuration.
         """
+
+        # We are using set as we want to avoid the possible duplicates.
+        search_strings = set()
+        
         for fieldset in self.searched_fields:
             search_string = ''
 
@@ -204,7 +209,11 @@ class IndexConf(object):
 
                 search_string += unicode(value)
 
-            yield search_string
+            # Stemming has to be performed before throwing out duplicated,
+            # because otherwise some duplicates can be missed.
+            search_strings.add(self._stem(search_string))
+
+        return search_strings
 
     def _stem(self, query):
         """

@@ -16,7 +16,8 @@ settings.configure(DEBUG = True,
    INSTALLED_APPS = (
        'smartlinks',
        'django_nose',
-       'smartlinks.tests',)
+       'smartlinks.tests',
+       'django.contrib.contenttypes')
 )
 
 #nose.main(argv=None)
@@ -24,8 +25,8 @@ settings.configure(DEBUG = True,
 from django_nose import NoseTestSuiteRunner
 from django.test.simple import run_tests
 
-#failures = run_tests(['smartlinks',], verbosity=1)
-#if failures:
-#    sys.exit(failures)
+failures = run_tests(['smartlinks',], verbosity=1)
+if failures:
+    sys.exit(failures)
 
-NoseTestSuiteRunner().run_tests(['smartlinks'])
+#NoseTestSuiteRunner().run_tests(['smartlinks'])
