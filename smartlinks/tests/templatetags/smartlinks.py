@@ -3,7 +3,7 @@ from django.template import Context, Template
 
 from ...tests.models import Movie
 from ...parser import SmartLinkParser
-from ...index_conf import IndexConf
+from ...index_conf import SmartLinkConf
 from .. import register_smart_link
 
 
@@ -18,7 +18,7 @@ class SmartLinksMainTest(TestCase):
 {{ smartembed|smartlinks }}
 """.replace('\n', ''))
 
-        register_smart_link(('m',), IndexConf(Movie.objects,
+        register_smart_link(('m',), SmartLinkConf(Movie.objects,
         embeddable_attributes=('image',)))
 
         self.m = Movie.objects.create(
@@ -40,7 +40,7 @@ class SmartLinksMainTest(TestCase):
         self.assertEqual(
             self.template.render(self.context),
             SmartLinkParser(
-                    {'m': IndexConf(Movie.objects)}
+                    {'m': SmartLinkConf(Movie.objects)}
                 ).parse(
                 SmartLinkParser.finder.match(self.smartlink)) + self.m.image()
         )

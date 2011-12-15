@@ -3,14 +3,14 @@ from django.contrib.contenttypes.models import ContentType
 from smartlinks.management.commands.reset_smartlink_index import recreate_index
 
 from smartlinks.models import IndexEntry
-from smartlinks.index_conf import IndexConf
+from smartlinks.index_conf import SmartLinkConf
 from smartlinks import register, register_smart_link
 
 from smartlinks.tests.models import Movie
 
 class IndexResetTest(TestCase):
     def testIndexRecreation(self):
-        register_smart_link(('m', 'movie'), IndexConf(
+        register_smart_link(('m', 'movie'), SmartLinkConf(
             Movie.objects,
             searched_fields=('title',)
             )

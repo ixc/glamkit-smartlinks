@@ -4,7 +4,7 @@ from django.utils.safestring import mark_safe
 from django.template.context import Context
 
 from smartlinks.models import IndexEntry
-from smartlinks.index_conf import IndexConf
+from smartlinks.index_conf import SmartLinkConf
 
 class Parser(object):
     """
@@ -79,7 +79,7 @@ class Parser(object):
                         continue
                     seen.append(conf)
                 else:
-                    return IndexConf.model_unresolved_template.render(
+                    return SmartLinkConf.model_unresolved_template.render(
                         Context(dict(
                             verbose_text=verbose_text
                         ))

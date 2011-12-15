@@ -4,7 +4,7 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.template.context import Context
 
-from smartlinks.index_conf import IndexConf
+from smartlinks.index_conf import SmartLinkConf
 from smartlinks.models import IndexEntry
 
 from smartlinks.tests.models import Movie
@@ -39,7 +39,7 @@ class IndexConfTest(TestCase):
             year=1976
         )
 
-        self.movie_index_conf = IndexConf(
+        self.movie_index_conf = SmartLinkConf(
             Movie.objects,
             searched_fields=(
                 'title',

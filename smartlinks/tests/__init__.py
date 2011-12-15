@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.db import models
 
-from smartlinks.index_conf import IndexConf
+from smartlinks.index_conf import SmartLinkConf
 from smartlinks import register, register_smart_link,\
     IncorrectlyConfiguredSmartlinkException, AlreadyRegisteredSmartlinkException
 
@@ -45,7 +45,7 @@ class RegistrationTest(TestCase):
 
 
     def testRegisterLinks(self):
-        conf = IndexConf(queryset=Event.objects)
+        conf = SmartLinkConf(queryset=Event.objects)
         smartlinks_conf = register(
             (('e', 'event'), conf),
             (('m', 'movie'), conf)
@@ -61,7 +61,7 @@ class RegistrationTest(TestCase):
         )
 
     def testRegisterLink(self):
-        conf = IndexConf(queryset=Event.objects)
+        conf = SmartLinkConf(queryset=Event.objects)
 
         smartlinks_conf = register_smart_link(
             ('e', 'event'), conf)
@@ -78,19 +78,19 @@ class RegistrationTest(TestCase):
         self.assertRaises(IncorrectlyConfiguredSmartlinkException,
             register_smart_link,
             ('e',),
-            IndexConf(Event.objects, searched_fields=('blah',)))
+            SmartLinkConf(Event.objects, searched_fields=('blah',)))
 
         # Searched field is a function with too many argument => exception.
         self.assertRaises(IncorrectlyConfiguredSmartlinkException,
             register_smart_link,
             ('e'),
-            IndexConf(Event.objects, searched_fields=('my_favourite_func')))
+            SmartLinkConf(Event.objects, searched_fields=('my_favourite_func')))
 
         # While registering the callable with no args should work just fine.
-        register_smart_link(('zzz',), IndexConf(Event.objects,
+        register_smart_link(('zzz',), SmartLinkConf(Event.objects,
                                         searched_fields=('my_func_without_args',)))
 
         # We also can't register the model with same shortcut twice.
         self.assertRaises(AlreadyRegisteredSmartlinkException,
             register_smart_link,
-            ('zzz',), IndexConf(Event.objects))
+            ('zzz',), SmartLinkConf(Event.objects))

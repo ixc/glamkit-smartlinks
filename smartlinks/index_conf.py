@@ -13,7 +13,7 @@ from smartlinks.models import IndexEntry
 # Model shortcut -> :py:class:IndexConf instance.
 smartlinks_conf = SortedDict()
 
-class IndexConf(object):
+class SmartLinkConf(object):
     """
     Configuration of the smartlink index.
 
@@ -43,6 +43,9 @@ class IndexConf(object):
     as the defaults for model-based templates.
 
     """
+    queryset = None
+
+    embeddable_attributes=()
 
     # Regexp to match the characters which are removed during stemming.
     # By default all non-alphanumerics are removed.
@@ -87,7 +90,8 @@ class IndexConf(object):
         disallowed_embed_template=None
         ):
 
-        self.queryset = queryset
+        if queryset:
+            self.queryset = queryset
 
         if searched_fields:
             self.searched_fields = searched_fields

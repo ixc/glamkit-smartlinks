@@ -5,11 +5,11 @@ from django.test import TestCase
 from django.template.context import Context
 
 from smartlinks.parser import SmartLinkParser, SmartEmbedParser, Parser
-from smartlinks.index_conf import IndexConf
+from smartlinks.index_conf import SmartLinkConf
 from smartlinks.models import IndexEntry
 
 
-class MyIndexConf(IndexConf):
+class MySmartLinkConf(SmartLinkConf):
     def __init__(self):
         pass
 
@@ -22,7 +22,7 @@ class MyIndexConf(IndexConf):
 
 class ParserTest(TestCase):
     def setUp(self):
-        self.conf = MyIndexConf()
+        self.conf = MySmartLinkConf()
         self.p = Parser(dict(
             movie=self.conf,
             m=self.conf
@@ -50,7 +50,7 @@ class ParserTest(TestCase):
 
         self.assertIsInstance(
             self.p.conf,
-            MyIndexConf
+            MySmartLinkConf
         )
 
         self.assertEquals(
@@ -60,7 +60,7 @@ class ParserTest(TestCase):
 
         self.assertEquals(
             self.p.template,
-            IndexConf.template
+            SmartLinkConf.template
         )
 
         # TODO - error
@@ -88,7 +88,7 @@ class ParserTest(TestCase):
 
         self.assertEqual(
             ret,
-            IndexConf.ambiguous_template.render(
+            SmartLinkConf.ambiguous_template.render(
                 Context(dict(
                     verbose_text="the awesome movie"
                 ))
@@ -104,7 +104,7 @@ class ParserTest(TestCase):
 
         self.assertEqual(
             ret,
-            IndexConf.model_unresolved_template.render(
+            SmartLinkConf.model_unresolved_template.render(
                 Context(dict(
                     smartlink_text=smartlink,
                     verbose_text="Mad Max",
@@ -124,7 +124,7 @@ class ParserTest(TestCase):
         # unresolved template is rendered.
         self.assertEqual(
             ret,
-            IndexConf.unresolved_template.render(
+            SmartLinkConf.unresolved_template.render(
                 Context(dict(
                     verbose_text="the awesome movie"
                 ))
@@ -149,7 +149,7 @@ class ParserTest(TestCase):
         poor_parser = Parser({})
         self.assertEqual(poor_parser.parse(SmartLinkParser.finder.match(
                 "[[ mad max ]]")),
-            IndexConf.model_unresolved_template.render(Context({
+            SmartLinkConf.model_unresolved_template.render(Context({
                 'verbose_text': 'mad max'
             }))
         )
@@ -176,7 +176,7 @@ class ParserTest(TestCase):
 class SmartLinkParserTest(TestCase):
     def setUp(self):
         self.p = SmartLinkParser({
-            "m": MyIndexConf()
+            "m": MySmartLinkConf()
         })
 
     def testRegexp(self):
@@ -247,7 +247,7 @@ class SmartLinkParserTest(TestCase):
         # Test bailing out.
         self.assertEqual(
             self.p.parse(SmartLinkParser.finder.match("[[ no such object ]]")),
-            IndexConf.model_unresolved_template.render(
+            SmartLinkConf.model_unresolved_template.render(
                 Context(dict(
                     verbose_text="no such object",
                 ))
@@ -257,7 +257,7 @@ class SmartLinkParserTest(TestCase):
         # Test normal running.
         self.assertEqual(
             self.p.parse(SmartLinkParser.finder.match("[[ Mad Max ]]")),
-            IndexConf.template.render(
+            SmartLinkConf.template.render(
                 Context(dict(
                     verbose_text="Mad Max",
                     obj="Object: Mad Max"
@@ -268,7 +268,7 @@ class SmartLinkParserTest(TestCase):
 class SmartEmbedParserTest(TestCase):
     def setUp(self):
         self.p = SmartLinkParser({
-            "m": MyIndexConf()
+            "m": MySmartLinkConf()
         })
 
     def testRegexp(self):
@@ -324,7 +324,7 @@ class SmartEmbedParserTest(TestCase):
     def testParse(self):
         m = SmartEmbedParser.finder
 
-        class TestEmbedIndexConf(IndexConf):
+        class TestEmbedSmartLinkConf(SmartLinkConf):
             def find_object(self, query):
                 if query == "no such object":
                     raise IndexEntry.DoesNotExist()
@@ -333,7 +333,7 @@ class SmartEmbedParserTest(TestCase):
                 ))()
 
         parser = SmartEmbedParser({
-            "movie": TestEmbedIndexConf(
+            "movie": TestEmbedSmartLinkConf(
                 embeddable_attributes=("image", "video")
             )
         })
@@ -341,7 +341,7 @@ class SmartEmbedParserTest(TestCase):
         # Test bailing out early.
         self.assertEqual(
             parser.parse(m.match("{{ no such object | image }}")),
-            TestEmbedIndexConf.model_unresolved_template.render(
+            TestEmbedSmartLinkConf.model_unresolved_template.render(
                 Context(dict(
                     verbose_text="no such object",
                 ))
@@ -361,7 +361,7 @@ class SmartEmbedParserTest(TestCase):
         smartlink_text = "{{ Mad Max | unallowed_attribute }}"
         self.assertEqual(
             parser.parse(m.match(smartlink_text)),
-            TestEmbedIndexConf.disallowed_embed_template.render(Context({
+            TestEmbedSmartLinkConf.disallowed_embed_template.render(Context({
                 'smartlink_text': smartlink_text
             }))
         )
