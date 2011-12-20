@@ -6,78 +6,153 @@ from django.contrib.contenttypes.models import ContentType
 
 from smartlinks.models import IndexEntry
 
-# ..py:data:: smartlinks_conf
-#
-# Extremely scary global state. Mutable during initialization.
-#
-# Model shortcut -> :py:class:IndexConf instance.
+#: Configuration global state. Mutable during initialization.
+#:
+#: Maps model shortcuts to :py:class:`SmartLinkConf` instances.
 smartlinks_conf = SortedDict()
 
 class SmartLinkConf(object):
     """
     Configuration of the smartlink index.
 
+    .. highlight:: python
+
     Example configuration::
 
         SmartLinkConf(
             queryset=Event.objects,
-            searched_fields=('title', 'slug', 'pk', 'my_custom_callback',)
+            searched_fields=('title', 'slug', 'pk', 'my_custom_callback',),
             embeddable_attributes=('image', 'video',),
         )
-
-    ..py:attribute:: queryset
-        Fields which are searched
-
-    ..py:attribute:: searched_fields
-        List of
-
-        - strings which are attributes or callable names
-        - tuples of the strings specified above
-
-    ..py:attribute:: embeddable_attributes
-        List of callables or attribute names on the model
-        specified as strings.
-
-    Note that all templates are available on both class-level and instance-level.
-    Class-level templates are used when the model is not specified and
-    as the defaults for model-based templates.
-
     """
+
+    #: Queryset to which the smartlink resolution is limited to. Comes in handy when
+    #: you want to limit the ability to link to non-public content, eg::
+    #:
+    #:      queryset = Movie.objects.filter(public=True)
     queryset = None
 
-    embeddable_attributes=()
+    #: Fields which are searched for the smartlinks resolution.
+    #: List of
+    #:
+    #:    - strings which are attributes or methods of the class,
+    #:represented as strings.
+    #:    - tuples of the strings specified above.
+    #:
+    #: EG the possible configuration might look like::
+    #:
+    #:      searched_fields = ('pk', '__unicode__', 'title', ('title', 'year'))
+    #:
+    #: Under the configuration specified above, with the model and the object
+    #: specified below::
+    #:
+    #:      class Movie(models.Model):
+    #:          title = models.CharField()
+    #:          year = models.IntegerField()
+    #:
+    #:          def __unicode__(self):
+    #:              return "movie %s" % self.title
+    #:
+    #:      Movie.objects.create(title="Mad Max", year=1984)
+    #:
+    #: The following links will work:
+    #:
+    #:      - ``[[ Mad Max ]]``
+    #:      - ``[[ movie Mad Max ]]``
+    #:      - ``[[ Mad Max 1984 ]]``
+    #: Note that the order of the fields in the tuple is significant, eg
+    #: ``[[ 1984 Mad Max ]]`` will **not** work.
+    #: If you desire a custom logic for the search terms generation,
+    #: method py:meth:`_get_search_strings_for_index` is a good candidate for
+    #: overwriting.
+    searched_fields=('pk', '__unicode__', 'slug', 'title')
 
-    # Regexp to match the characters which are removed during stemming.
-    # By default all non-alphanumerics are removed.
+
+    embeddable_attributes=()
+    """
+    Sometimes just getting the link to the referenced object is not enough - we
+    might want it's image, videoclip or in general any custom attribute.
+
+    That's where *smartembeds* come to the rescue. Using proper configuration
+    and the syntax almost identical to smartlinks we can get hold of those attributes.
+
+    Suppose our *smartlinked* model looks like::
+
+        class Movie(models.Model):
+            title = models.CharField()
+            image = models.ImageField()
+
+            def image(self, size=300, alt='Image'):
+                # ...some code to do resizing if ``size`` is specified...
+
+                return '<img src="%s" title="%s" />' % (self.image.url, alt)
+
+    Examples of smartembeds include::
+
+        # Everything before the pipe symbol works the same way
+        # as in smartlinks, the next string after the pipe symbol is the
+        # attribute we are resolving.
+        {{ Mad Max | image }}
+
+        # Models are selected as usual
+        {{ event->Mad Max | image }}
+
+        # Furthermore, we can pass various parameters to the image method.
+        {{ Mad Max | image | 300 | My image title }}
+
+        # And those can be passed using keyword arguments.
+        {{ Mad Max | image | 300 | alt=My image title }}
+        {{ Mad Max | image | alt=My image title | size=300 }}
+
+    The parameter ``embeddable_attributes`` specifies a tuple of method names
+    specified as strings, eg ``embeddable_attributes= ('image', 'video')``.
+
+    .. highlight:: python
+
+    The reason behind this configuration settings is security pre-caution:
+    we don't want users to be able to include links like ``{{ user->admin | password }}``,
+    or, heaven forbid, ``{{ user->admin | delete }}``.
+    """
+
+    #: Regexp to match the characters which are removed during stemming.
+    #: By default all non-alphanumerics are removed.
     stemming_replace = re.compile(r"\W")
 
-    # Template for normal rendering of the smartlink.
+    #: Template for normal rendering of the smartlink.
+    #: Available objects are ``obj``, representing the linked instance,
+    #: and ``verbose_text``.
     template=Template("".join(
         ['<a href="{{ obj.get_absolute_url }}" title="{{ obj }}">',
          '{{ verbose_text }}',
          '</a>']
     ))
 
-    # Error template used in case the smartlink can not be resolved.
+    #: Error template used in case the smartlink can not be resolved.
+    #: Available object is ``verbose_text``.
     unresolved_template = Template(
             '<span class="smartlinks-unresolved">{{ verbose_text }}</span>')
 
-    # Error template used in case the model name specified for the smartlink
-    # was not referenced during configuration.
+    #: Error template used in case the model name specified for the smartlink
+    #: was not referenced during configuration.
+    #: Available object is ``smartlink_text``, representing the whole
+    #: smartlink.
     model_unresolved_template = Template(
             '<span class="smartlinks-unresolved">{{ smartlink_text }}</span>')
 
-    # Error template for the case when smartlink description corresponds to more then
-    # one entry in the index.
+    #: Error template for the case when smartlink description corresponds to more then
+    #: one entry in the index.
+    #: Available object is ``verbose_text``.
     ambiguous_template = Template(
             '<span class="smartlinks-ambiguous">{{ verbose_text }}</span>')
 
-    # Error template used in case the attributes of the model which were
-    #    not specified in the 'embeddable_attributes' are being accessed.
+    #: Error template used in case the attributes of the model which were
+    #:    not specified in the 'embeddable_attributes' are being accessed.
+    #: Available object is ``smartlink_text``, representing the whole
+    #: smartlink.
     disallowed_embed_template = Template(
         '<span class="smartlinks-unallowed">{{ smartlink_text }}</span>')
 
-    searched_fields=('pk', '__unicode__', 'slug', 'title')
+
 
     def __init__(self,
         queryset=None,
@@ -118,10 +193,30 @@ class SmartLinkConf(object):
         """
         Find the entry in the :py:class:`IndexEntry` corresponding to the query
         and return the corresponding object.
-
-        EG if class 'Celebration' is smartlinked, an instance of 'Celebration'
-        will be returned or DoesNotExist/MultipleObjectsReturned default exception
+        
+        EG if class ``Celebration`` is smartlinked, an instance of ``Celebration``
+        will be returned or one of ``DoesNotExist`` or ``MultipleObjectsReturned`` exceptions
         will be raised.
+
+        Note that by overriding this method one can use smartlinks on the objects not
+        in the database, eg Wikipedia::
+
+            class WikiProxy(object):
+                def __init__(self, title):
+                    self.title = title
+
+                def get_absolute_url(self):
+                    return "http://en.wikipedia.com/wiki/%s" % self.title
+
+            class WikiLinkConf(SmartLinkConf):
+                def find_object(self, query):
+
+                    # Possibly a piece of logic to find whether the article exists
+                    # in wikipedia.
+                    condition = ...
+
+                    if condition:
+                        return WikiProxy(title)
 
         :param query: String representing the query to search in index for.
 
@@ -148,18 +243,24 @@ class SmartLinkConf(object):
         Update index for the updated/deleted/created object.
         Creates/Removes SmartLinkIndex objects.
 
+        This method gets attached to the ``post_save`` and ``delete``
+        signals by the function :py:func:`register`.
+
+        Note that if this method is somehow bypassed while the data is changed - eg
+        ``.update()`` is called
+        on the queryset, smartlink resolution will run into cache invalidation problems.
+        At that point the best bet will be to run ``./manage.py reset_smartlink_index``,
+        see :py:meth:`recreate_index`.
+
         :param sender: SmartLinked model, subclass of Django's models.Model.
         :param instance: Instance of the model being processed for SmartLink
         caching.
+        
         :param created: a flag.
+        
             - False: object is edited.
             - True: object is created.
             - 'deleteme': object is deleted.
-
-        Note:
-            - we might run into cache invalidation problems if the django
-                signal is bypassed - update_index_for_object will never
-                get called and
         """
         deleted = created == 'deleteme'
         content_type = ContentType.objects.get_for_model(sender)
@@ -195,6 +296,28 @@ class SmartLinkConf(object):
     def _get_search_strings_for_index(self, instance):
         """
         Get the searchable strings according to the configuration.
+
+        This method is a good candidate for overriding if one needs custom
+        logic for generating search string out of the index. EG one might want
+        to create an entry in :py:class:`IndexEntry` per line in the ``instance.description``
+        field::
+
+            class GlossaryIndexConf(IndexConf):
+                def _get_search_strings_for_index(self, instance):
+                    # Note that if that this method is overriden, param
+                    # self.searced_fields becomes redundant.
+
+                    # One entry in index per line.
+                    return [self._stem(line) for line in instance.description.split('\n')]
+
+        Note how important it is to remember to apply the stemming and to get rid of
+        the duplicates - otherwise, :py:class:`IndexEntry` will complain.
+
+        :param instance: Istance returned by :py:meth:`find_object`, usually one which belongs
+        to :py:attr:`queryset`.
+
+        :return: Set of all string to be added to index.
+        :rtype: iterable
         """
 
         # We are using set as we want to avoid the possible duplicates.
@@ -222,6 +345,7 @@ class SmartLinkConf(object):
     def _stem(self, query):
         """
         Perform (very basic) stemming of the query:
+
             - Delete all non-alphanumeric characters.
             - Put everything to lower case.
 

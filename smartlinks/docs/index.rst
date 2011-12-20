@@ -6,26 +6,24 @@
 SMARTLINKS: Documentation
 =========================
 
-.. toctree::
-  configuration.rst
-  resolution.rst
-  
+Smartlinks bring easy, but powerful wiki-style internal links to Django websites.
 
-Smartlinks are an extension of wikilinks syntax for linking to arbitrary Django models
-from the blob of text. When editing a blob of text, it is a nuisance to have to look up
-URL of an other page, or URL of a particular image of a particular object in the database.
-Furthermore, hardcoding such URLs will not be resistant to URL schema changes.
-
-Smartlinks application provides a ``|smartlinks`` filter which finds smartlinks in the document
-and replaces them with appropriate URLs.
+Smartlinks give content editors a way to make quick, easy links to other pages, which will
+continue to work even if the target page moves, and will degrade gracefully if the target
+page disappears. With smartlinks, it is even possible to create conditional links to content
+that doesn’t yet exist, but may one day exist - when the target content is published,
+the link automatically activates!
 
 Use cases
 ---------
 
+
+.. highlight:: html+django
+
 Before diving into the configuration details here is a brief overview of what smartlinks library can
 do for you.
 
-  - Links to a Django model. `[[ Mad Max ]]` renders to::
+  - Links to a Django model. ``[[ Mad Max ]]`` renders to::
 
     <a href="/movies/mad_max/" title="Mad Max: Beyond Thunderdome">Mad Max</a>
 
@@ -34,7 +32,8 @@ do for you.
     [[ event->Mad Max | Fan convention ]]
 
   - Smartlinks can be used to get an image, or any other media from a model.
-  ``{{ Mad Max | image }}`` will render to::
+
+    ``{{ Mad Max | image }}`` will render to::
 
     <img src="/media/movies/mad_max.jpg" title="Mad Max: Beyond Thunderdome title image "/>
 
@@ -42,12 +41,13 @@ do for you.
 
     {{ Mad Max | image | size=300 | align=north }}
 
-  will render to::
+    Will render to::
 
     <img src="/media/cache/300/200/mad_max.jpg" title="Mad Max: Beyond Thunderdome title image" />
 
   - Smartlinks can be also used to provide glossary lookups inside the text. For instance,
-  ``{{ YMCA | glossary_definition }}`` can be rendered to::
+
+    ``{{ YMCA | glossary_definition }}`` can be rendered to::
 
     <abbr title="Young Men Christian Association">YMCA</a>
 
@@ -55,9 +55,15 @@ do for you.
 Installation and Configuration
 ------------------------------
 
-Just add ``smartlinks`` to a list of ``INSTALLED_APPS`` in your ``settings.py``.
+Add ``smartlinks`` and ``django.contrib.contenttypes`` to
+of ``INSTALLED_APPS`` in your settings.
 
-After initial configuration .. code-block:: html+django
+Do ``./manage.py syncdb`` to initialize those.
+
+.. highlight:: python
+
+Create the initial configuration anywhere in the module which is guaranteed to be
+imported::
 
   from smartlinks import register
   from smartlinks.index_conf import IndexConf
@@ -69,21 +75,33 @@ After initial configuration .. code-block:: html+django
     (('e', 'event',), IndexConf(Event.objects))
   )
 
-Then you'll need to create the index: ``./manage.py reset_smartlinks_index``.
+If the legacy data is present in the smartlinked models,
+the index should be refreshed using management command: ``./manage.py reset_smartlinks_index``.
 
-After that, smartlinks can be used in templates::
+.. highlight:: html+django
+
+After that, smartlinks can be used in templates either using filter::
 
   {% load smartlinks %}
   {{ page.content|smartlinks }}
 
+Or a templatetag ``filter`` (this one is convenient in your ``base.html``)::
+
+  {% load smartlinks %}
+  
+  {% filter smartlinks %}
+      {% block content %}{% endblock %}
+  {% endfilter %}
+
+
 which will substitute the references to smartlinks with a corresponding html code.
 
-Go to the `Configuration`_ section for more details.
+Go to the :ref:`configuration` section for more details.
 
 Resolution mechanism
 --------------------
 
-`Resolution`_
+:ref:`resolution`
 
 Misc
 ====

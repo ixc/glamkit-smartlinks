@@ -70,8 +70,7 @@ class IndexEntry(models.Model):
         records en masse, import data from other database or use fixtures on smartlinked
         data without manually updating the index. Legacy data present before the
         smartlinks installation becomes a problem as well. The solution is to call
-        ``./manage.py reset_smartlink_index``:py:class:ResetSmartLinkIndex
-        after such changes.
+        ``./manage.py reset_smartlink_index`` after such changes.
 
     .. [#stemming] In this context, removing unneded characters from the word
         combination.

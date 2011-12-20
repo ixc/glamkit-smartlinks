@@ -6,8 +6,18 @@ from smartlinks.index_conf import smartlinks_conf
 
 def register(*configurations):
     """
-    Register multiple smartlinks. Each ``conf`` in ``configurations`` is
+    A shortcut for registering multiple smartlinks at once.
+
+    Each ``conf`` in ``configurations`` is
     a tuple ``(shortcuts, conf)``, see :py:func:`register_smart_link`.
+
+    Example usage::
+
+        register(
+            (('o', 'object',), SmartLinkConf(MyObject.objects)),
+            (('e', 'event',), SmartLinkConf(Event.objects)),
+        )
+
     """
     for (shortcuts, conf) in configurations:
         register_smart_link(shortcuts, conf)
@@ -30,21 +40,18 @@ def register_smart_link(shortcuts, conf):
 
     will result in::
 
-        smartlinks_conf = {'e': SmartLinkConf(queryset=Event.objects))
+        smartlinks_conf = {'e': SmartLinkConf(queryset=Event.objects)}
 
-    Modifies smartlinks_conf.
+    Modifies :py:data:`smartlinks_conf`.
 
-    :param shortcuts: List of names which can be used to specify that
-    smartlink should point to this particular class.
+    :param shortcuts: List of names which can be used to specify that smartlink should point to this particular class.
     :type shortcuts: Tuple of strings.
-
     :param conf: Smartlink configuration.
     :type conf: :py:class:`SmartLinkConf` instance.
-
     :throws:
+    
         - IncorrectlyConfiguredSmartlinkException
         - AlreadyRegisteredSmartlinkException
-
     """
     model = conf.queryset.model
 

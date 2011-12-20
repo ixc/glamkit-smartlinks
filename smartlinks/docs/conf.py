@@ -14,6 +14,7 @@
 import sys, os
 #sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../django/')))
 print sys.path
 
 # If extensions (or modules to document with autodoc) are in another directory,
