@@ -79,7 +79,7 @@ class Parser(object):
                         continue
                     seen.append(conf)
                 else:
-                    return SmartLinkConf.model_unresolved_template.render(
+                    return SmartLinkConf.unresolved_template.render(
                         Context(dict(
                             verbose_text=verbose_text
                         ))

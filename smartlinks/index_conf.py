@@ -134,10 +134,10 @@ class SmartLinkConf(object):
 
     #: Error template used in case the model name specified for the smartlink
     #: was not referenced during configuration.
-    #: Available object is ``smartlink_text``, representing the whole
+    #: Available object is ``verbose_text``, representing the whole
     #: smartlink.
     model_unresolved_template = Template(
-            '<span class="smartlinks-unresolved">{{ smartlink_text }}</span>')
+            '<span class="smartlinks-unresolved">{{ verbose_text }}</span>')
 
     #: Error template for the case when smartlink description corresponds to more then
     #: one entry in the index.

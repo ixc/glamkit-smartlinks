@@ -1,0 +1,189 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Resolution &mdash; smartlinks 0.5 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="smartlinks 0.5 documentation" href="index.html" />
+    <link rel="prev" title="Configuration and registration" href="configuration.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="configuration.html" title="Configuration and registration"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">smartlinks 0.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="resolution">
+<span id="id1"></span><h1>Resolution<a class="headerlink" href="#resolution" title="Permalink to this headline">¶</a></h1>
+<p>Smartlinks are resolved using cached index.</p>
+<span class="target" id="module-smartlinks.models"></span><dl class="class">
+<dt id="smartlinks.models.IndexEntry">
+<em class="property">class </em><tt class="descclassname">smartlinks.models.</tt><tt class="descname">IndexEntry</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#smartlinks.models.IndexEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>In order to simplify the smartlink resolution process the index of
+stemified attributes is kept.</p>
+<p>Consider adding smartlinks to models Event, Movie and Book. Suppose
+our toy application looks like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Event</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">CharField</span><span class="p">()</span>
+    <span class="n">date</span> <span class="o">=</span> <span class="n">DateField</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">Movie</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">CharField</span><span class="p">()</span>
+    <span class="n">release_date</span> <span class="o">=</span> <span class="n">DateField</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">Book</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">CharField</span><span class="p">()</span>
+    <span class="n">printed</span> <span class="o">=</span> <span class="n">DateField</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__unicode__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">u&quot;</span><span class="si">%s</span><span class="s"> printed in </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">printed</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In that context it is natural to refer to the <tt class="docutils literal"><span class="pre">Event</span></tt> by <tt class="docutils literal"><span class="pre">title</span></tt> or
+by <tt class="docutils literal"><span class="pre">title</span></tt> and <tt class="docutils literal"><span class="pre">date</span></tt>, to the <tt class="docutils literal"><span class="pre">Movie</span></tt> by <tt class="docutils literal"><span class="pre">title</span></tt> or by <tt class="docutils literal"><span class="pre">title</span></tt> and the
+<tt class="docutils literal"><span class="pre">release_date</span></tt>, and to the <tt class="docutils literal"><span class="pre">Book</span></tt> by <tt class="docutils literal"><span class="pre">title</span></tt>, <tt class="docutils literal"><span class="pre">title</span></tt> and <tt class="docutils literal"><span class="pre">printed</span></tt>,
+or <tt class="docutils literal"><span class="pre">__unicode__</span></tt>.</p>
+<p>Furthermore, if a movie in our database was called <em>Mad Max</em> and released in
+<em>1984</em> we would like the queries <tt class="docutils literal"><span class="pre">[[</span> <span class="pre">Mad</span> <span class="pre">Max</span> <span class="pre">]]</span></tt>, <tt class="docutils literal"><span class="pre">[[</span> <span class="pre">Mad</span> <span class="pre">Max:</span> <span class="pre">1984</span> <span class="pre">]]</span></tt>,
+<tt class="docutils literal"><span class="pre">[[</span> <span class="pre">Mad</span> <span class="pre">Max</span> <span class="pre">1984</span> <span class="pre">]]</span></tt> and <tt class="docutils literal"><span class="pre">[[</span> <span class="pre">mad</span> <span class="pre">max</span> <span class="pre">-</span> <span class="pre">1984</span> <span class="pre">]]</span></tt> to resolve to the same
+good old <em>Mad Max</em>.</p>
+<p>Such querying is impossible without some sort of denormalization. Proper fulltext
+search is one option, but it&#8217;s an overkill in terms of features,
+and the performance might quickly become unacceptable with one query per smartlink
+for each content page.</p>
+<p>Hence smartlinks library uses it&#8217;s own cache in a form of a single table.
+During the configuration stage the user specifies which fields are <em>smartlinkable</em>
+like so:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="s">&#39;title&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;title&#39;</span><span class="p">,</span> <span class="s">&#39;printed&#39;</span><span class="p">,),</span> <span class="s">&#39;__unicode__&#39;</span><span class="p">,</span> <span class="s">&#39;pk&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Such configuration would create three entries in the index per each book, all
+linking to the same object, with <tt class="docutils literal"><span class="pre">title</span></tt>, <tt class="docutils literal"><span class="pre">title</span></tt> and <tt class="docutils literal"><span class="pre">printed</span></tt> concatenated,
+and the result of calling <tt class="docutils literal"><span class="pre">__unicode__</span></tt>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The order in which fields are specified is important. In our toy example
+<tt class="docutils literal"><span class="pre">[[</span> <span class="pre">One</span> <span class="pre">Hundred</span> <span class="pre">Years</span> <span class="pre">of</span> <span class="pre">Solitude</span> <span class="pre">1967</span> <span class="pre">]]</span></tt> will work, but
+<tt class="docutils literal"><span class="pre">[[</span> <span class="pre">(1967)</span> <span class="pre">One</span> <span class="pre">Hundred</span> <span class="pre">Years</span> <span class="pre">of</span> <span class="pre">Solitude</span> <span class="pre">]]</span></tt> won&#8217;t.</p>
+</div>
+<p>Furthermore, the values of the attributes are stemmed[#stemming] with all letters
+brought to the lower case and non-alphanumeric removed.</p>
+<p>For instance, for the book <em>One Hundred Years of Solitude</em> printed in 1967 we
+will create the following entries in the index:</p>
+<blockquote>
+<div><ul class="simple">
+<li>onehundreadyearsofsolitude</li>
+<li>onehundreadyearsofsolitude1967</li>
+<li>onehundreadyearsofsolitudeprintedin1967</li>
+<li>27</li>
+</ul>
+</div></blockquote>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Having a cached index means having all the headache associated with
+invalidating it at the correct time. You can&#8217;t call <tt class="docutils literal"><span class="pre">qs.update(...)</span></tt>, delete
+records en masse, import data from other database or use fixtures on smartlinked
+data without manually updating the index. Legacy data present before the
+smartlinks installation becomes a problem as well. The solution is to call
+<tt class="docutils literal"><span class="pre">./manage.py</span> <span class="pre">reset_smartlink_index</span></tt> after such changes.</p>
+</div>
+<table class="docutils footnote" frame="void" id="stemming" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[1]</td><td>In this context, removing unneded characters from the word
+combination.</td></tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="configuration.html"
+                        title="previous chapter">Configuration and registration</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/resolution.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="configuration.html" title="Configuration and registration"
+             >previous</a> |</li>
+        <li><a href="index.html">smartlinks 0.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Greg Turner, George Karpenkov, Thomas Ashelford.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>
