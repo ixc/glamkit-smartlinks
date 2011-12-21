@@ -67,7 +67,6 @@ class SmartLinkConf(object):
     #: overwriting.
     searched_fields=('pk', '__unicode__', 'slug', 'title')
 
-
     embeddable_attributes=()
     """
     Sometimes just getting the link to the referenced object is not enough - we

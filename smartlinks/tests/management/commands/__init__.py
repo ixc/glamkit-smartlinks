@@ -1,1 +1,1 @@
-from reset_smartlink_index import *
+from reset_smartlink_index_test import *

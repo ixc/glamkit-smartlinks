@@ -1,10 +1,10 @@
 from django.test import TestCase
 from django.contrib.contenttypes.models import ContentType
-from smartlinks.management.commands.reset_smartlink_index import recreate_index
+from django.core.management import call_command
 
 from smartlinks.models import IndexEntry
 from smartlinks.index_conf import SmartLinkConf
-from smartlinks import register, register_smart_link
+from smartlinks import register_smart_link
 
 from smartlinks.tests.models import Movie
 
@@ -44,7 +44,7 @@ class IndexResetTest(TestCase):
         )
 
         # ...and see whether it can re-create itself properly.
-        recreate_index()
+        call_command('reset_smartlink_index')
 
         self.assertEqual(IndexEntry.objects.count(),
             2)
