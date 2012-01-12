@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.template.context import Context
 
 from smartlinks.parser import SmartLinkParser, SmartEmbedParser, Parser
-from smartlinks.index_conf import SmartLinkConf
+from smartlinks.conf import SmartLinkConf
 from smartlinks.models import IndexEntry
 
 

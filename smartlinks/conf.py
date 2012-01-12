@@ -164,10 +164,10 @@ class SmartLinkConf(object):
         disallowed_embed_template=None
         ):
 
-        if queryset:
+        if queryset is not None:
             self.queryset = queryset
 
-        if searched_fields:
+        if searched_fields is not None:
             self.searched_fields = searched_fields
 
         # Hack to make iteration over fields easier and more unified -

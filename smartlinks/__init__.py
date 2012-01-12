@@ -2,7 +2,7 @@ import inspect
 
 from django.db.models import signals
 
-from smartlinks.index_conf import smartlinks_conf
+from smartlinks.conf import smartlinks_conf
 
 def register(*configurations):
     """

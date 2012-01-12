@@ -3,6 +3,8 @@ from django.db import models
 # Test models for tests.
 from django.utils.safestring import SafeString
 
+from smartlinks.fields import SmartLinkField
+
 class PublicMoviesManager(models.Manager):
     def get_query_set(self):
         return super(PublicMoviesManager, self).get_query_set().filter(

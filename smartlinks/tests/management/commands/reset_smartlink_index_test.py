@@ -3,7 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.management import call_command
 
 from smartlinks.models import IndexEntry
-from smartlinks.index_conf import SmartLinkConf
+from smartlinks.conf import SmartLinkConf
 from smartlinks import register_smart_link
 
 from smartlinks.tests.models import Movie

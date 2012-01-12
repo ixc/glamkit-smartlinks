@@ -25,7 +25,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="smartlinks 0.5 documentation" href="#" /> 
+    <link rel="top" title="smartlinks 0.5 documentation" href="#" />
+    <link rel="next" title="Configuration and registration" href="configuration.html" /> 
   </head>
   <body>
     <div class="related">
@@ -37,6 +38,9 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="configuration.html" title="Configuration and registration"
+             accesskey="N">next</a> |</li>
         <li><a href="#">smartlinks 0.5 documentation</a> &raquo;</li> 
       </ul>
     </div>  
@@ -54,6 +58,17 @@ continue to work even if the target page moves, and will degrade gracefully if t
 page disappears. With smartlinks, it is even possible to create conditional links to content
 that doesn’t yet exist, but may one day exist - when the target content is published,
 the link automatically activates!</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration and registration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#registration">Registration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#id1">Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fields.html">Smartlink fields</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resolution.html">Resolution</a></li>
+</ul>
+</div>
 <div class="section" id="use-cases">
 <h2>Use cases<a class="headerlink" href="#use-cases" title="Permalink to this headline">¶</a></h2>
 <p>Before diving into the configuration details here is a brief overview of what smartlinks library can
@@ -102,7 +117,7 @@ of <tt class="docutils literal"><span class="pre">INSTALLED_APPS</span></tt> in 
 <p>Create the initial configuration anywhere in the module which is guaranteed to be
 imported:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">smartlinks</span> <span class="kn">import</span> <span class="n">register</span>
-<span class="kn">from</span> <span class="nn">smartlinks.index_conf</span> <span class="kn">import</span> <span class="n">IndexConf</span>
+<span class="kn">from</span> <span class="nn">smartlinks.conf</span> <span class="kn">import</span> <span class="n">IndexConf</span>
 
 <span class="kn">from</span> <span class="nn">myapp.models</span> <span class="kn">import</span> <span class="n">Movie</span><span class="p">,</span> <span class="n">Event</span>
 
@@ -137,6 +152,7 @@ the index should be refreshed using management command: <tt class="docutils lite
 </div>
 <div class="section" id="misc">
 <h1>Misc<a class="headerlink" href="#misc" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="fields.html#fields"><em>Smartlink fields</em></a></p>
 <ul class="simple">
 <li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
 </ul>
@@ -159,6 +175,9 @@ the index should be refreshed using management command: <tt class="docutils lite
 <li><a class="reference internal" href="#misc">Misc</a></li>
 </ul>
 
+  <h4>Next topic</h4>
+  <p class="topless"><a href="configuration.html"
+                        title="next chapter">Configuration and registration</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/index.txt"
@@ -190,6 +209,9 @@ the index should be refreshed using management command: <tt class="docutils lite
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="configuration.html" title="Configuration and registration"
+             >next</a> |</li>
         <li><a href="#">smartlinks 0.5 documentation</a> &raquo;</li> 
       </ul>
     </div>

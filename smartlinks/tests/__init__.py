@@ -1,17 +1,18 @@
 from django.test import TestCase
 from django.db import models
 
-from smartlinks.index_conf import SmartLinkConf
+from smartlinks.conf import SmartLinkConf
 from smartlinks import register, register_smart_link,\
     IncorrectlyConfiguredSmartlinkException, AlreadyRegisteredSmartlinkException
 
 from .templatetags import *
-from .index_conf import *
+from .conf import *
 from .models import *
 from .parser import *
 from .management import *
+from .fields import *
 
-import smartlinks.index_conf as index_conf
+import smartlinks.conf as conf
 
 class Event(models.Model):
     title = models.CharField(max_length=200)
@@ -33,15 +34,15 @@ class Event(models.Model):
 
 class RegistrationTest(TestCase):
     def setUp(self):
-        while index_conf.smartlinks_conf.keys():
-            index_conf.smartlinks_conf.pop(
-                index_conf.smartlinks_conf.keys()[0])
+        while conf.smartlinks_conf.keys():
+            conf.smartlinks_conf.pop(
+                conf.smartlinks_conf.keys()[0])
 
     def tearDown(self):
         # Clean global configuration.
-        while index_conf.smartlinks_conf.keys():
-            index_conf.smartlinks_conf.pop(
-                index_conf.smartlinks_conf.keys()[0])
+        while conf.smartlinks_conf.keys():
+            conf.smartlinks_conf.pop(
+                conf.smartlinks_conf.keys()[0])
 
 
     def testRegisterLinks(self):

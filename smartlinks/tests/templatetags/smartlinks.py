@@ -3,7 +3,7 @@ from django.template import Context, Template
 
 from ...tests.models import Movie
 from ...parser import SmartLinkParser
-from ...index_conf import SmartLinkConf
+from ...conf import SmartLinkConf
 from .. import register_smart_link
 
 

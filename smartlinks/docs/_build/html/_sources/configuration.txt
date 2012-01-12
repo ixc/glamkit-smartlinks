@@ -30,6 +30,6 @@ The quicker ad hoc way is to pass attributes to :class:`SmartLinkConf` which def
   register_smart_link('0', SmartLinkConf(MyObject.objects, template="..my smartlink template.."))
 
 
-.. automodule:: smartlinks.index_conf
+.. automodule:: smartlinks.conf
     :members:
 

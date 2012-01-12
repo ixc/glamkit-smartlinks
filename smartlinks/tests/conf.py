@@ -1,16 +1,14 @@
-from django.db.utils import IntegrityError
 from django.test import TestCase
-from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.template.context import Context
 
-from smartlinks.index_conf import SmartLinkConf
+from smartlinks.conf import SmartLinkConf
 from smartlinks.models import IndexEntry
 
 from smartlinks.tests.models import Movie
 
 
-class IndexConfTest(TestCase):
+class ConfTest(TestCase):
     def setUp(self):
         self.ae = self.assertEqual
 
@@ -39,7 +37,7 @@ class IndexConfTest(TestCase):
             year=1976
         )
 
-        self.movie_index_conf = SmartLinkConf(
+        self.movie_conf = SmartLinkConf(
             Movie.objects,
             searched_fields=(
                 'title',
@@ -50,19 +48,19 @@ class IndexConfTest(TestCase):
             )
         )
 
-        self.movie_index_conf.update_index_for_object(Movie,
+        self.movie_conf.update_index_for_object(Movie,
             self.m,
             created=True)
 
-        self.movie_index_conf.update_index_for_object(Movie,
+        self.movie_conf.update_index_for_object(Movie,
             self.harry1,
             created=True)
 
-        self.movie_index_conf.update_index_for_object(Movie,
+        self.movie_conf.update_index_for_object(Movie,
             self.harry2,
             created=True)
 
-        self.movie_index_conf.update_index_for_object(Movie,
+        self.movie_conf.update_index_for_object(Movie,
             self.secret_movie,
             created=True)
 
@@ -77,7 +75,7 @@ class IndexConfTest(TestCase):
         ))
 
         self.assertEqual(
-            self.movie_index_conf.template.render(
+            self.movie_conf.template.render(
                 Context({
                     'obj': obj,
                     "verbose_text": u"verbose_text"
@@ -92,7 +90,7 @@ class IndexConfTest(TestCase):
 
         # Unresolved template.
         self.assertEqual(
-            self.movie_index_conf.unresolved_template.render(
+            self.movie_conf.unresolved_template.render(
                 Context({
                     "verbose_text": "verbose_text"
                 })
@@ -102,7 +100,7 @@ class IndexConfTest(TestCase):
 
         # Ambigous template.
         self.assertEqual(
-            self.movie_index_conf.ambiguous_template.render(
+            self.movie_conf.ambiguous_template.render(
                 Context({
                     "verbose_text": "verbose_text"
                 })
@@ -112,7 +110,7 @@ class IndexConfTest(TestCase):
 
         # Disallowed embeds template.
         self.assertEqual(
-            self.movie_index_conf.disallowed_embed_template.render(
+            self.movie_conf.disallowed_embed_template.render(
                 Context({
                     "smartlink_text": "smartlink text"
                 })
@@ -123,7 +121,7 @@ class IndexConfTest(TestCase):
 
         # No model found template
         self.assertEqual(
-            self.movie_index_conf.unresolved_template.render(
+            self.movie_conf.unresolved_template.render(
                 Context({
                     "verbose_text": "smartlink_text"
                 })
@@ -134,28 +132,28 @@ class IndexConfTest(TestCase):
         
     def testFindObject(self):
         self.assertEqual(
-            self.movie_index_conf.find_object(
+            self.movie_conf.find_object(
                 query="Mad Max"
             ),
             self.m
         )
 
         self.assertEqual(
-            self.movie_index_conf.find_object(
+            self.movie_conf.find_object(
                 query="Mad Max 1984"
             ),
             self.m
         )
 
         self.assertEqual(
-            self.movie_index_conf.find_object(
+            self.movie_conf.find_object(
                 query=unicode(self.m.pk)
             ),
             self.m
         )
 
         self.assertEqual(
-            self.movie_index_conf.find_object(
+            self.movie_conf.find_object(
                 query="mad-max-1984"
             ),
             self.m
@@ -164,7 +162,7 @@ class IndexConfTest(TestCase):
         # Falls back to __startswith if the object
         # can not be found.
         self.assertEqual(
-            self.movie_index_conf.find_object(
+            self.movie_conf.find_object(
                 query="mad-max-1984"
             ),
             self.m
@@ -176,7 +174,7 @@ class IndexConfTest(TestCase):
         # thing isn't working.
         self.assertRaises(
             IndexEntry.DoesNotExist,
-            lambda: self.movie_index_conf.find_object(
+            lambda: self.movie_conf.find_object(
                 "Secret Movie"
             )
         )
@@ -185,13 +183,13 @@ class IndexConfTest(TestCase):
         # when there is an ambiguity.
         self.assertRaises(
             IndexEntry.MultipleObjectsReturned,
-            lambda: self.movie_index_conf.find_object(
+            lambda: self.movie_conf.find_object(
                 "Dirty Harry"
             )
         )
 
         self.assertEqual(
-            self.movie_index_conf.find_object(
+            self.movie_conf.find_object(
                 query="Dirty Harry: 1976"
             ),
             self.harry2
@@ -218,7 +216,7 @@ class IndexConfTest(TestCase):
         )
 
         # Signal for deleting the object.
-        self.movie_index_conf.update_index_for_object(Movie,
+        self.movie_conf.update_index_for_object(Movie,
             self.harry1,
             created='deleteme')
 
@@ -229,7 +227,7 @@ class IndexConfTest(TestCase):
         )
 
         # And let's test creation.
-        self.movie_index_conf.update_index_for_object(Movie,
+        self.movie_conf.update_index_for_object(Movie,
             self.harry1,
             created=True
         )
@@ -252,7 +250,7 @@ class IndexConfTest(TestCase):
         )
 
         # ...and the editing should work as well.
-        self.movie_index_conf.update_index_for_object(Movie,
+        self.movie_conf.update_index_for_object(Movie,
             self.harry1,
             created=False
         )

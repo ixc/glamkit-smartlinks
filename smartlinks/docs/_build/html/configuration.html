@@ -25,9 +25,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="smartlinks 0.5 documentation" href="index.html" />
-    <link rel="next" title="Resolution" href="resolution.html" />
-    <link rel="prev" title="SMARTLINKS: Documentation" href="index.html" /> 
+    <link rel="top" title="smartlinks 0.5 documentation" href="index.html" /> 
   </head>
   <body>
     <div class="related">
@@ -39,12 +37,6 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="resolution.html" title="Resolution"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="index.html" title="SMARTLINKS: Documentation"
-             accesskey="P">previous</a> |</li>
         <li><a href="index.html">smartlinks 0.5 documentation</a> &raquo;</li> 
       </ul>
     </div>  
@@ -129,9 +121,9 @@ registration:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">register_smart_link</span><span class="p">(</span><span class="s">&#39;0&#39;</span><span class="p">,</span> <span class="n">SmartLinkConf</span><span class="p">(</span><span class="n">MyObject</span><span class="o">.</span><span class="n">objects</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="s">&quot;..my smartlink template..&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
-<span class="target" id="module-smartlinks.index_conf"></span><dl class="class">
-<dt id="smartlinks.index_conf.SmartLinkConf">
-<em class="property">class </em><tt class="descclassname">smartlinks.index_conf.</tt><tt class="descname">SmartLinkConf</tt><big>(</big><em>queryset=None</em>, <em>searched_fields=None</em>, <em>embeddable_attributes=()</em>, <em>template=None</em>, <em>unresolved_template=None</em>, <em>model_unresolved_template=None</em>, <em>ambiguous_template=None</em>, <em>disallowed_embed_template=None</em><big>)</big><a class="headerlink" href="#smartlinks.index_conf.SmartLinkConf" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="module-smartlinks.conf"></span><dl class="class">
+<dt id="smartlinks.conf.SmartLinkConf">
+<em class="property">class </em><tt class="descclassname">smartlinks.conf.</tt><tt class="descname">SmartLinkConf</tt><big>(</big><em>queryset=None</em>, <em>searched_fields=None</em>, <em>embeddable_attributes=()</em>, <em>template=None</em>, <em>unresolved_template=None</em>, <em>model_unresolved_template=None</em>, <em>ambiguous_template=None</em>, <em>disallowed_embed_template=None</em><big>)</big><a class="headerlink" href="#smartlinks.conf.SmartLinkConf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Configuration of the smartlink index.</p>
 <p>Example configuration:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">SmartLinkConf</span><span class="p">(</span>
@@ -142,16 +134,16 @@ registration:</p>
 </pre></div>
 </div>
 <dl class="attribute">
-<dt id="smartlinks.index_conf.SmartLinkConf.ambiguous_template">
-<tt class="descname">ambiguous_template</tt><em class="property"> = Template(&lt;span class=&quot;smartlinks-ambiguous&quot;&gt;{{ verbose_text }}&lt;/span&gt;)</em><a class="headerlink" href="#smartlinks.index_conf.SmartLinkConf.ambiguous_template" title="Permalink to this definition">¶</a></dt>
+<dt id="smartlinks.conf.SmartLinkConf.ambiguous_template">
+<tt class="descname">ambiguous_template</tt><em class="property"> = Template(&lt;span class=&quot;smartlinks-ambiguous&quot;&gt;{{ verbose_text }}&lt;/span&gt;)</em><a class="headerlink" href="#smartlinks.conf.SmartLinkConf.ambiguous_template" title="Permalink to this definition">¶</a></dt>
 <dd><p>Error template for the case when smartlink description corresponds to more then
 one entry in the index.
 Available object is <tt class="docutils literal"><span class="pre">verbose_text</span></tt>.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="smartlinks.index_conf.SmartLinkConf.disallowed_embed_template">
-<tt class="descname">disallowed_embed_template</tt><em class="property"> = Template(&lt;span class=&quot;smartlinks-unallowed&quot;&gt;{{ smartlink_text }}&lt;/span&gt;)</em><a class="headerlink" href="#smartlinks.index_conf.SmartLinkConf.disallowed_embed_template" title="Permalink to this definition">¶</a></dt>
+<dt id="smartlinks.conf.SmartLinkConf.disallowed_embed_template">
+<tt class="descname">disallowed_embed_template</tt><em class="property"> = Template(&lt;span class=&quot;smartlinks-unallowed&quot;&gt;{{ smartlink_text }}&lt;/span&gt;)</em><a class="headerlink" href="#smartlinks.conf.SmartLinkConf.disallowed_embed_template" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>Error template used in case the attributes of the model which were</dt>
 <dd>not specified in the &#8216;embeddable_attributes&#8217; are being accessed.</dd>
@@ -161,8 +153,8 @@ smartlink.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="smartlinks.index_conf.SmartLinkConf.embeddable_attributes">
-<tt class="descname">embeddable_attributes</tt><em class="property"> = ()</em><a class="headerlink" href="#smartlinks.index_conf.SmartLinkConf.embeddable_attributes" title="Permalink to this definition">¶</a></dt>
+<dt id="smartlinks.conf.SmartLinkConf.embeddable_attributes">
+<tt class="descname">embeddable_attributes</tt><em class="property"> = ()</em><a class="headerlink" href="#smartlinks.conf.SmartLinkConf.embeddable_attributes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sometimes just getting the link to the referenced object is not enough - we
 might want it&#8217;s image, videoclip or in general any custom attribute.</p>
 <p>That&#8217;s where <em>smartembeds</em> come to the rescue. Using proper configuration
@@ -202,8 +194,8 @@ or, heaven forbid, <tt class="docutils literal"><span class="pre">{{</span> <spa
 </dd></dl>
 
 <dl class="method">
-<dt id="smartlinks.index_conf.SmartLinkConf.find_object">
-<tt class="descname">find_object</tt><big>(</big><em>query</em><big>)</big><a class="headerlink" href="#smartlinks.index_conf.SmartLinkConf.find_object" title="Permalink to this definition">¶</a></dt>
+<dt id="smartlinks.conf.SmartLinkConf.find_object">
+<tt class="descname">find_object</tt><big>(</big><em>query</em><big>)</big><a class="headerlink" href="#smartlinks.conf.SmartLinkConf.find_object" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the entry in the <tt class="xref py py-class docutils literal"><span class="pre">IndexEntry</span></tt> corresponding to the query
 and return the corresponding object.</p>
 <p>EG if class <tt class="docutils literal"><span class="pre">Celebration</span></tt> is smartlinked, an instance of <tt class="docutils literal"><span class="pre">Celebration</span></tt>
@@ -247,17 +239,17 @@ in the database, eg Wikipedia:</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="smartlinks.index_conf.SmartLinkConf.model_unresolved_template">
-<tt class="descname">model_unresolved_template</tt><em class="property"> = Template(&lt;span class=&quot;smartlinks-unresolved&quot;&gt;{{ smartlink_text }}&lt;/span&gt;)</em><a class="headerlink" href="#smartlinks.index_conf.SmartLinkConf.model_unresolved_template" title="Permalink to this definition">¶</a></dt>
+<dt id="smartlinks.conf.SmartLinkConf.model_unresolved_template">
+<tt class="descname">model_unresolved_template</tt><em class="property"> = Template(&lt;span class=&quot;smartlinks-unresolved&quot;&gt;{{ verbose_text }}&lt;/span&gt;)</em><a class="headerlink" href="#smartlinks.conf.SmartLinkConf.model_unresolved_template" title="Permalink to this definition">¶</a></dt>
 <dd><p>Error template used in case the model name specified for the smartlink
 was not referenced during configuration.
-Available object is <tt class="docutils literal"><span class="pre">smartlink_text</span></tt>, representing the whole
+Available object is <tt class="docutils literal"><span class="pre">verbose_text</span></tt>, representing the whole
 smartlink.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="smartlinks.index_conf.SmartLinkConf.queryset">
-<tt class="descname">queryset</tt><em class="property"> = None</em><a class="headerlink" href="#smartlinks.index_conf.SmartLinkConf.queryset" title="Permalink to this definition">¶</a></dt>
+<dt id="smartlinks.conf.SmartLinkConf.queryset">
+<tt class="descname">queryset</tt><em class="property"> = None</em><a class="headerlink" href="#smartlinks.conf.SmartLinkConf.queryset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Queryset to which the smartlink resolution is limited to. Comes in handy when
 you want to limit the ability to link to non-public content, eg:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">queryset</span> <span class="o">=</span> <span class="n">Movie</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">public</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
@@ -266,15 +258,15 @@ you want to limit the ability to link to non-public content, eg:</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="smartlinks.index_conf.SmartLinkConf.recreate_index">
-<tt class="descname">recreate_index</tt><big>(</big><big>)</big><a class="headerlink" href="#smartlinks.index_conf.SmartLinkConf.recreate_index" title="Permalink to this definition">¶</a></dt>
+<dt id="smartlinks.conf.SmartLinkConf.recreate_index">
+<tt class="descname">recreate_index</tt><big>(</big><big>)</big><a class="headerlink" href="#smartlinks.conf.SmartLinkConf.recreate_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>Re-create the index for the <tt class="docutils literal"><span class="pre">self.queryset</span></tt> if it exists.
 Assumes the index is empty.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="smartlinks.index_conf.SmartLinkConf.searched_fields">
-<tt class="descname">searched_fields</tt><em class="property"> = ('pk', '__unicode__', 'slug', 'title')</em><a class="headerlink" href="#smartlinks.index_conf.SmartLinkConf.searched_fields" title="Permalink to this definition">¶</a></dt>
+<dt id="smartlinks.conf.SmartLinkConf.searched_fields">
+<tt class="descname">searched_fields</tt><em class="property"> = ('pk', '__unicode__', 'slug', 'title')</em><a class="headerlink" href="#smartlinks.conf.SmartLinkConf.searched_fields" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fields which are searched for the smartlinks resolution.
 List of</p>
 <blockquote>
@@ -321,30 +313,30 @@ overwriting.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="smartlinks.index_conf.SmartLinkConf.stemming_replace">
-<tt class="descname">stemming_replace</tt><em class="property"> = &lt;_sre.SRE_Pattern object at 0x25fb030&gt;</em><a class="headerlink" href="#smartlinks.index_conf.SmartLinkConf.stemming_replace" title="Permalink to this definition">¶</a></dt>
+<dt id="smartlinks.conf.SmartLinkConf.stemming_replace">
+<tt class="descname">stemming_replace</tt><em class="property"> = &lt;_sre.SRE_Pattern object at 0x2387030&gt;</em><a class="headerlink" href="#smartlinks.conf.SmartLinkConf.stemming_replace" title="Permalink to this definition">¶</a></dt>
 <dd><p>Regexp to match the characters which are removed during stemming.
 By default all non-alphanumerics are removed.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="smartlinks.index_conf.SmartLinkConf.template">
-<tt class="descname">template</tt><em class="property"> = Template(&lt;a href=&quot;{{ obj.get_absolute_url }}&quot; title=&quot;{{ obj }}&quot;&gt;{{ verbose_text }}&lt;/a&gt;)</em><a class="headerlink" href="#smartlinks.index_conf.SmartLinkConf.template" title="Permalink to this definition">¶</a></dt>
+<dt id="smartlinks.conf.SmartLinkConf.template">
+<tt class="descname">template</tt><em class="property"> = Template(&lt;a href=&quot;{{ obj.get_absolute_url }}&quot; title=&quot;{{ obj }}&quot;&gt;{{ verbose_text }}&lt;/a&gt;)</em><a class="headerlink" href="#smartlinks.conf.SmartLinkConf.template" title="Permalink to this definition">¶</a></dt>
 <dd><p>Template for normal rendering of the smartlink.
 Available objects are <tt class="docutils literal"><span class="pre">obj</span></tt>, representing the linked instance,
 and <tt class="docutils literal"><span class="pre">verbose_text</span></tt>.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="smartlinks.index_conf.SmartLinkConf.unresolved_template">
-<tt class="descname">unresolved_template</tt><em class="property"> = Template(&lt;span class=&quot;smartlinks-unresolved&quot;&gt;{{ verbose_text }}&lt;/span&gt;)</em><a class="headerlink" href="#smartlinks.index_conf.SmartLinkConf.unresolved_template" title="Permalink to this definition">¶</a></dt>
+<dt id="smartlinks.conf.SmartLinkConf.unresolved_template">
+<tt class="descname">unresolved_template</tt><em class="property"> = Template(&lt;span class=&quot;smartlinks-unresolved&quot;&gt;{{ verbose_text }}&lt;/span&gt;)</em><a class="headerlink" href="#smartlinks.conf.SmartLinkConf.unresolved_template" title="Permalink to this definition">¶</a></dt>
 <dd><p>Error template used in case the smartlink can not be resolved.
 Available object is <tt class="docutils literal"><span class="pre">verbose_text</span></tt>.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="smartlinks.index_conf.SmartLinkConf.update_index_for_object">
-<tt class="descname">update_index_for_object</tt><big>(</big><em>sender</em>, <em>instance</em>, <em>created='deleteme'</em>, <em>**kw</em><big>)</big><a class="headerlink" href="#smartlinks.index_conf.SmartLinkConf.update_index_for_object" title="Permalink to this definition">¶</a></dt>
+<dt id="smartlinks.conf.SmartLinkConf.update_index_for_object">
+<tt class="descname">update_index_for_object</tt><big>(</big><em>sender</em>, <em>instance</em>, <em>created='deleteme'</em>, <em>**kw</em><big>)</big><a class="headerlink" href="#smartlinks.conf.SmartLinkConf.update_index_for_object" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update index for the updated/deleted/created object.
 Creates/Removes SmartLinkIndex objects.</p>
 <p>This method gets attached to the <tt class="docutils literal"><span class="pre">post_save</span></tt> and <tt class="docutils literal"><span class="pre">delete</span></tt>
@@ -353,7 +345,7 @@ signals by the function <tt class="xref py py-func docutils literal"><span class
 <tt class="docutils literal"><span class="pre">.update()</span></tt> is called
 on the queryset, smartlink resolution will run into cache invalidation problems.
 At that point the best bet will be to run <tt class="docutils literal"><span class="pre">./manage.py</span> <span class="pre">reset_smartlink_index</span></tt>,
-see <a class="reference internal" href="#smartlinks.index_conf.SmartLinkConf.recreate_index" title="smartlinks.index_conf.SmartLinkConf.recreate_index"><tt class="xref py py-meth docutils literal"><span class="pre">recreate_index()</span></tt></a>.</p>
+see <a class="reference internal" href="#smartlinks.conf.SmartLinkConf.recreate_index" title="smartlinks.conf.SmartLinkConf.recreate_index"><tt class="xref py py-meth docutils literal"><span class="pre">recreate_index()</span></tt></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -386,10 +378,10 @@ see <a class="reference internal" href="#smartlinks.index_conf.SmartLinkConf.rec
 </dd></dl>
 
 <dl class="data">
-<dt id="smartlinks.index_conf.smartlinks_conf">
-<tt class="descclassname">smartlinks.index_conf.</tt><tt class="descname">smartlinks_conf</tt><em class="property"> = {}</em><a class="headerlink" href="#smartlinks.index_conf.smartlinks_conf" title="Permalink to this definition">¶</a></dt>
+<dt id="smartlinks.conf.smartlinks_conf">
+<tt class="descclassname">smartlinks.conf.</tt><tt class="descname">smartlinks_conf</tt><em class="property"> = {}</em><a class="headerlink" href="#smartlinks.conf.smartlinks_conf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Configuration global state. Mutable during initialization.</p>
-<p>Maps model shortcuts to <a class="reference internal" href="#smartlinks.index_conf.SmartLinkConf" title="smartlinks.index_conf.SmartLinkConf"><tt class="xref py py-class docutils literal"><span class="pre">SmartLinkConf</span></tt></a> instances.</p>
+<p>Maps model shortcuts to <a class="reference internal" href="#smartlinks.conf.SmartLinkConf" title="smartlinks.conf.SmartLinkConf"><tt class="xref py py-class docutils literal"><span class="pre">SmartLinkConf</span></tt></a> instances.</p>
 </dd></dl>
 
 </div>
@@ -410,12 +402,6 @@ see <a class="reference internal" href="#smartlinks.index_conf.SmartLinkConf.rec
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">SMARTLINKS: Documentation</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="resolution.html"
-                        title="next chapter">Resolution</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/configuration.txt"
@@ -447,12 +433,6 @@ see <a class="reference internal" href="#smartlinks.index_conf.SmartLinkConf.rec
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="resolution.html" title="Resolution"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="index.html" title="SMARTLINKS: Documentation"
-             >previous</a> |</li>
         <li><a href="index.html">smartlinks 0.5 documentation</a> &raquo;</li> 
       </ul>
     </div>

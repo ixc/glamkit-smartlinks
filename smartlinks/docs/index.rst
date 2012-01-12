@@ -14,6 +14,11 @@ page disappears. With smartlinks, it is even possible to create conditional link
 that doesn’t yet exist, but may one day exist - when the target content is published,
 the link automatically activates!
 
+.. toctree::
+    :glob:
+
+    *
+
 Use cases
 ---------
 
@@ -66,7 +71,7 @@ Create the initial configuration anywhere in the module which is guaranteed to b
 imported::
 
   from smartlinks import register
-  from smartlinks.index_conf import IndexConf
+  from smartlinks.conf import IndexConf
 
   from myapp.models import Movie, Event
 
@@ -105,6 +110,8 @@ Resolution mechanism
 
 Misc
 ====
+
+:ref:`fields`
 
 * :ref:`search`
 
