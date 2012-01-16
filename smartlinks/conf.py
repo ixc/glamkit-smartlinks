@@ -208,6 +208,11 @@ class SmartLinkConf(object):
                     return "http://en.wikipedia.com/wiki/%s" % self.title
 
             class WikiLinkConf(SmartLinkConf):
+
+                # Note empty ``searched_fields`` - otherwise resolving engine
+                # will get confused.
+                searched_fields = ()
+
                 def find_object(self, query):
 
                     # Possibly a piece of logic to find whether the article exists
@@ -216,6 +221,8 @@ class SmartLinkConf(object):
 
                     if condition:
                         return WikiProxy(title)
+
+            register_smart_link(('w', 'wiki',), WikiLinkConf())
 
         :param query: String representing the query to search in index for.
 

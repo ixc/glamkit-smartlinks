@@ -30,7 +30,8 @@ class SmartLinkValidator(object):
 
     code = 'invalid'
 
-    def __init__(self, verify_exists=False):
+    def __init__(self,
+                 verify_exists=False):
         super(SmartLinkValidator, self).__init__()
         self.verify_exists = verify_exists
 
@@ -68,7 +69,8 @@ class SmartLinkField(ModelCharField):
         html = q.link_url() # HTML is the resolved link.
     """
 
-    def __init__(self, verify_exists=False, *args, **kwargs):
+    def __init__(self, verify_exists=False,
+                 *args, **kwargs):
         """
         :param verify_exists: If this parameter is set to ``True``, and
         the entered smartlink does not resolve the validator will complain.

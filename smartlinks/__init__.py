@@ -53,7 +53,9 @@ def register_smart_link(shortcuts, conf):
         - IncorrectlyConfiguredSmartlinkException
         - AlreadyRegisteredSmartlinkException
     """
-    model = conf.queryset.model
+    # If the queryset supplied does not have a ``model``
+    # attribute, use ``queryset`` itself instead.
+    model = getattr(conf.queryset, 'model', conf.queryset)
 
     # Sanity configuration checks.
     for fieldset in conf.searched_fields:
@@ -92,12 +94,13 @@ def register_smart_link(shortcuts, conf):
 
         smartlinks_conf[name] = conf
 
-    # Connect post-save/post-delete signals.
-    for signal in [signals.post_save, signals.post_delete]:
-        signal.connect(
-            conf.update_index_for_object,
-            sender=model
-        )
+    # Connect post-save/post-delete signals, if model is properly defined.
+    if model:
+        for signal in [signals.post_save, signals.post_delete]:
+            signal.connect(
+                conf.update_index_for_object,
+                sender=model
+            )
 
     # The global object is updated as well,
     # this line is purely for debugging/testing purposes.
