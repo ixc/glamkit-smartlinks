@@ -4,7 +4,6 @@ from django.utils.safestring import mark_safe
 from django.template.context import Context
 
 from smartlinks.models import IndexEntry
-from smartlinks.conf import SmartLinkConf
 
 class Parser(object):
     """
@@ -19,9 +18,23 @@ class Parser(object):
 
     def process_smartlinks(self, value):
         """
+        :param value: Str or Unicode.
+        :rtype: SafeString
+
         Replace the smartlinks with their values inside the text.
         """
         return mark_safe(self.finder.sub(self.parse, value))
+
+    def get_smartlinked_object(self, value):
+        """
+        :param value: Str or Unicode.
+        :rtype: Django model instance
+
+        Get the object smartlinked to.
+
+        :raises: same as :py:meth:`self._find_object`.
+        """
+        return self._find_object(self.finder.match(value))
 
     def parse(self, match):
         """
@@ -30,84 +43,97 @@ class Parser(object):
         :returns:
         :rtype: SafeString
         """
-        model = match.group("ModelName")
         query = match.group("Query").strip()
 
         verbose_text = (match.groupdict().get('VerboseText',
-                None) or match.group('Query')).strip()
+                                             '') or query).strip()
 
-        # Sets self.object and self.template, or bails early.
+        # Sets self.obj, self.conf and self.verbose_text or bails early.
+        try:
 
-        # If model is specified, let's try to find it.
-        if model and not model in self.smartlinks_conf:
-            # Model is specified, but it does not exist in configuration
-            # -> error.
+            # Self.conf is also set by ``self._find_object``
+            self.obj = self._find_object(match)
+        except NoSmartLinkConfFoundException:
 
-            # Just pick the template from the first configuration,
-            # ``model_unresolved_template`` should be the same in all
-            # configurations anyway.
+            if not self.smartlinks_conf:
+
+                # No configurations => bail.
+                raise
+
             return self.smartlinks_conf.values()[
                    0
-                ].model_unresolved_template.render(Context({
-                    'smartlink_text': match.group(0),
-                    'verbose_text': verbose_text,
-                    'query': query
-                }))
-
-        try:
-            if model:
-                conf = self.smartlinks_conf[model]
-                obj = conf.find_object(query)
-
-            else:
-                # Model is not specified, let's try to find it.
-                # Note that because we are using OrderedDict all models
-                # are tried in the specified order.
-
-                seen = []
-                for conf in self.smartlinks_conf.values():
-
-                    # Many configuration occur in .values()
-                    # multiple times.
-                    if conf in seen:
-                        continue
-
-                    try:
-                        obj = conf.find_object(query)
-                        break
-                    except IndexEntry.DoesNotExist:
-                        continue
-                    seen.append(conf)
-                else:
-
-                    # Break wasn't called, hence object wasn't found.
-                    return SmartLinkConf.unresolved_template.render(
-                        Context(dict(
-                            verbose_text=verbose_text
-                        ))
-                    )
-
-            template = conf.template
+            ].model_unresolved_template.render(Context({
+                'smartlink_text': match.group(0),
+                'verbose_text': verbose_text,
+                'query': query
+            }))
 
         except IndexEntry.DoesNotExist:
-            return conf.unresolved_template.render(
+            return self.conf.unresolved_template.render(
                 Context(dict(
                     verbose_text=verbose_text
                 ))
             )
 
         except IndexEntry.MultipleObjectsReturned:
-            return conf.ambiguous_template.render(
+            return self.conf.ambiguous_template.render(
                 Context(dict(
                     verbose_text=verbose_text
                 ))
             )
 
-        self.conf = conf
-        self.obj = obj
-        self.template = template
         self.verbose_text = verbose_text
 
+    def _find_object(self, match):
+        """
+        Find the object smartlinked to, sets ``self.conf``.
+
+        :param match: Regexp match.
+        :return: Found object corresponding to the smartlink.
+        :rtype: Django model instance.
+        :raises: IndexEntry.DoesNotExist, IndexEntry.MultipleObjectsReturned,
+        NoSmartLinkConfFoundException
+        """
+        model = match.group("ModelName")
+        query = match.group("Query").strip()
+
+        # Empty configuration -> error.
+        if not self.smartlinks_conf:
+            raise NoSmartLinkConfFoundException()
+
+        # If model is specified, let's try to find it.
+        if model and not model in self.smartlinks_conf:
+            # Model is specified, but it does not exist in configuration
+            # -> error.
+
+            # Show that the conf is not found.
+            raise NoSmartLinkConfFoundException()
+
+        if model:
+            self.conf = self.smartlinks_conf[model]
+            return self.conf.find_object(query)
+
+        else:
+            # Model is not specified, let's try to find it.
+            # Note that because we are using OrderedDict all models
+            # are tried in the specified order.
+
+            seen = []
+            for self.conf in self.smartlinks_conf.values():
+
+                # Many configuration occur in .values()
+                # multiple times.
+                if self.conf in seen:
+                    continue
+
+                try:
+                    return self.conf.find_object(query)
+                except IndexEntry.DoesNotExist:
+                    continue
+                seen.append(self.conf)
+
+        # If we have not returned yet, it means that the object does not exist.
+        raise IndexEntry.DoesNotExist()
 
 class SmartLinkParser(Parser):
     finder = re.compile(r"""
@@ -136,7 +162,7 @@ class SmartLinkParser(Parser):
             obj=self.obj,
         )
 
-        return self.template.render(Context(context))
+        return self.conf.template.render(Context(context))
 
 
 class SmartEmbedParser(Parser):
@@ -200,3 +226,6 @@ class SmartEmbedParser(Parser):
                     args.append(option)
 
         return getattr(self.obj, attr)(*args, **kwargs)
+
+class NoSmartLinkConfFoundException(Exception):
+    pass

@@ -25,7 +25,9 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="smartlinks 0.5 documentation" href="index.html" /> 
+    <link rel="top" title="smartlinks 0.5 documentation" href="index.html" />
+    <link rel="next" title="Smartlink fields" href="fields.html" />
+    <link rel="prev" title="SMARTLINKS: Documentation" href="index.html" /> 
   </head>
   <body>
     <div class="related">
@@ -37,6 +39,12 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="fields.html" title="Smartlink fields"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="SMARTLINKS: Documentation"
+             accesskey="P">previous</a> |</li>
         <li><a href="index.html">smartlinks 0.5 documentation</a> &raquo;</li> 
       </ul>
     </div>  
@@ -211,6 +219,11 @@ in the database, eg Wikipedia:</p>
         <span class="k">return</span> <span class="s">&quot;http://en.wikipedia.com/wiki/</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span>
 
 <span class="k">class</span> <span class="nc">WikiLinkConf</span><span class="p">(</span><span class="n">SmartLinkConf</span><span class="p">):</span>
+
+    <span class="c"># Note empty ``searched_fields`` - otherwise resolving engine</span>
+    <span class="c"># will get confused.</span>
+    <span class="n">searched_fields</span> <span class="o">=</span> <span class="p">()</span>
+
     <span class="k">def</span> <span class="nf">find_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">):</span>
 
         <span class="c"># Possibly a piece of logic to find whether the article exists</span>
@@ -219,6 +232,8 @@ in the database, eg Wikipedia:</p>
 
         <span class="k">if</span> <span class="n">condition</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">WikiProxy</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+
+<span class="n">register_smart_link</span><span class="p">((</span><span class="s">&#39;w&#39;</span><span class="p">,</span> <span class="s">&#39;wiki&#39;</span><span class="p">,),</span> <span class="n">WikiLinkConf</span><span class="p">())</span>
 </pre></div>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
@@ -314,7 +329,7 @@ overwriting.</p>
 
 <dl class="attribute">
 <dt id="smartlinks.conf.SmartLinkConf.stemming_replace">
-<tt class="descname">stemming_replace</tt><em class="property"> = &lt;_sre.SRE_Pattern object at 0x2387030&gt;</em><a class="headerlink" href="#smartlinks.conf.SmartLinkConf.stemming_replace" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">stemming_replace</tt><em class="property"> = &lt;_sre.SRE_Pattern object at 0x3171030&gt;</em><a class="headerlink" href="#smartlinks.conf.SmartLinkConf.stemming_replace" title="Permalink to this definition">¶</a></dt>
 <dd><p>Regexp to match the characters which are removed during stemming.
 By default all non-alphanumerics are removed.</p>
 </dd></dl>
@@ -375,6 +390,12 @@ see <a class="reference internal" href="#smartlinks.conf.SmartLinkConf.recreate_
 </table>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="smartlinks.conf.SmartLinkConf.url_field">
+<tt class="descname">url_field</tt><em class="property"> = 'get_absolute_url'</em><a class="headerlink" href="#smartlinks.conf.SmartLinkConf.url_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Field used to get URL on the instance.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="data">
@@ -402,6 +423,12 @@ see <a class="reference internal" href="#smartlinks.conf.SmartLinkConf.recreate_
 </li>
 </ul>
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">SMARTLINKS: Documentation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="fields.html"
+                        title="next chapter">Smartlink fields</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/configuration.txt"
@@ -433,6 +460,12 @@ see <a class="reference internal" href="#smartlinks.conf.SmartLinkConf.recreate_
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="fields.html" title="Smartlink fields"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="SMARTLINKS: Documentation"
+             >previous</a> |</li>
         <li><a href="index.html">smartlinks 0.5 documentation</a> &raquo;</li> 
       </ul>
     </div>

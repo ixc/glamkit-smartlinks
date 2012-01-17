@@ -117,11 +117,14 @@ class SmartLinkConf(object):
     #: By default all non-alphanumerics are removed.
     stemming_replace = re.compile(r"\W")
 
+    #: Field used to get URL on the instance.
+    url_field = "get_absolute_url"
+
     #: Template for normal rendering of the smartlink.
     #: Available objects are ``obj``, representing the linked instance,
     #: and ``verbose_text``.
     template=Template("".join(
-        ['<a href="{{ obj.get_absolute_url }}" title="{{ obj }}">',
+        ['<a href="{{ obj.%s }}" title="{{ obj }}">' % url_field,
          '{{ verbose_text }}',
          '</a>']
     ))

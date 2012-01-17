@@ -5,7 +5,7 @@ from django.forms.fields import CharField as FormsCharField
 from django.utils.encoding import smart_unicode
 
 from .parser import SmartEmbedParser, SmartLinkParser, Parser
-from .templatetags.smartlinks import smartlinks
+from smartlinks.models import IndexEntry
 from . import smartlinks_conf
 
 class SmartLinkValidator(object):
@@ -23,7 +23,7 @@ class SmartLinkValidator(object):
         u' or [[ model->smartlink ]] or [[ model->smartlink | verbose text ]].'
     )
 
-    unresolved_messge = (
+    unresolved_message = (
         u'This smartlink is legal, but it did not resolve '
         u'to a valid existing object.'
     )
@@ -50,7 +50,7 @@ class SmartLinkValidator(object):
             # Early return from ``Parser`` class indicates that
             # there were errors during smartlink resolution.
             if Parser.parse(parser(smartlinks_conf), match):
-                raise ValidationError(self.unresolved_messge)
+                raise ValidationError(self.unresolved_message)
 
 
 class SmartLinkField(ModelCharField):
@@ -66,7 +66,10 @@ class SmartLinkField(ModelCharField):
     smartlink. EG in our example you can do::
 
         q = Quote.objects.all()[0]
-        html = q.link_url() # HTML is the resolved link.
+        html = q.link_url() # Returns URI, or empty string when resolution fails.
+
+    Note that the field returns the object URI, and not the rendered
+    ``<a href=...></a>`` tag.
     """
 
     def __init__(self, verify_exists=False,
@@ -92,8 +95,24 @@ class SmartLinkField(ModelCharField):
 
     def contribute_to_class(self, cls, name):
         super(SmartLinkField, self).contribute_to_class(cls, name)
-        setattr(cls, '%s_url' % self.name,
-                lambda instance: smartlinks(cls.serializable_value(instance, self.name)))
+
+        def resolve_smartlink_url(instance):
+            """
+            Return the URL of the smartlink.
+            """
+            link = getattr(instance, self.name)
+            parser = SmartLinkParser(smartlinks_conf)
+
+            try:
+                obj = parser.get_smartlinked_object(link)
+                conf = parser.conf
+            except (IndexEntry.DoesNotExist,
+                    IndexEntry.MultipleObjectsReturned):
+                return u""
+            url = getattr(obj, conf.url_field, u"")
+            return url() if callable(url) else url
+
+        setattr(cls, 'get_%s_url' % self.name, resolve_smartlink_url)
 
 
 class SmartLinkFormField(FormsCharField):
@@ -103,8 +122,10 @@ class SmartLinkFormField(FormsCharField):
     Most of the time the user won't need to use this field manually,
     it should be automatically used by ``ModelForm``s.
 
-    The field validates whether the stored value is a valid *smartlink*
-    or *smartembed*. It can optionally check whether smartlink resolves to a valid object.
+    The field validates whether the stored value is a valid *smartlink*.
+    It can optionally check whether smartlink resolves to a valid object
+    at save time (there is no guarantee though that it will still
+    resolve at the render time).
     """
     def __init__(self, max_length=None,
                        min_length=None,
@@ -123,4 +144,8 @@ class SmartLinkFormField(FormsCharField):
 
     def to_python(self, value):
         value = value.strip()
+
+        # Assume square brackets.
+        if not value.startswith("["):
+            value = u"[[ %s ]]" % value
         return super(SmartLinkFormField, self).to_python(value)

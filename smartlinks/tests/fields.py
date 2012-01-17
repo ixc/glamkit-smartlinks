@@ -17,7 +17,9 @@ class MyModel(models.Model):
 
 class SmartLinkFieldTest(TestCase):
     def setUp(self):
-        pass
+        register_smart_link(('z',), MySmartLinkConf(
+            queryset=MyModel.objects,
+            searched_fields=()))
 
     def tearDown(self):
         # Clean global configuration.
@@ -27,13 +29,14 @@ class SmartLinkFieldTest(TestCase):
 
     def testValidation(self):
         f = SmartLinkFormField()
-        self.assertRaises(ValidationError, f.clean, 'hello')
+        self.assertRaises(ValidationError, f.clean, '[][][][]')
         self.assertEqual(f.clean(' [[ hello]]'), '[[ hello]]')
+        self.assertEqual(f.clean('hello'), '[[ hello ]]')
         self.assertEqual(f.clean(' [[ model->hello|description]]'),
                          '[[ model->hello|description]]')
 
         f = SmartLinkFormField(verify_exists=True)
-        self.assertRaises(ValidationError, f.clean, '[[ hello ]]')
+        self.assertRaises(ValidationError, f.clean, '[[ q->hello ]]')
         register_smart_link(('q',), MySmartLinkConf(
             queryset=MyModel.objects,
             searched_fields=()))
@@ -43,5 +46,7 @@ class SmartLinkFieldTest(TestCase):
 
     def testMagicUrlField(self):
         # <fieldname>_url() should appear and it should work properly.
-        m = MyModel(link='[[ unresolved link ]]')
-        self.assertIn('smartlinks-unresolved', m.link_url())
+        m = MyModel(link='[[ google.com ]]')
+
+        # No such object => empty string.
+        self.assertEqual('', m.get_link_url())

@@ -1,10 +1,10 @@
-from django.utils.safestring import SafeString
 import re
 
+from django.utils.safestring import SafeString
 from django.test import TestCase
 from django.template.context import Context
 
-from smartlinks.parser import SmartLinkParser, SmartEmbedParser, Parser
+from smartlinks.parser import SmartLinkParser, SmartEmbedParser, Parser, NoSmartLinkConfFoundException
 from smartlinks.conf import SmartLinkConf
 from smartlinks.models import IndexEntry
 
@@ -58,12 +58,6 @@ class ParserTest(TestCase):
             "Object: Mad Max"
         )
 
-        self.assertEquals(
-            self.p.template,
-            SmartLinkConf.template
-        )
-
-        # TODO - error
         self.assertEqual(
             self.p.verbose_text,
             "the awesome movie"
@@ -140,18 +134,13 @@ class ParserTest(TestCase):
             self.p.conf,
             self.conf
         )
-        self.assertEqual(
-            self.p.template,
-            self.conf.template
-        )
 
     def testParseNoConfig(self):
         poor_parser = Parser({})
-        self.assertEqual(poor_parser.parse(SmartLinkParser.finder.match(
-                "[[ mad max ]]")),
-            SmartLinkConf.model_unresolved_template.render(Context({
-                'verbose_text': 'mad max'
-            }))
+        self.assertRaises(
+            NoSmartLinkConfFoundException,
+            poor_parser.parse,
+            SmartLinkParser.finder.match("[[ mad max ]]"),
         )
 
     def _create_match(self, model=None, query="", verbose_text=None):
