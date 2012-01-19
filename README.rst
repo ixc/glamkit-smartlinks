@@ -2,8 +2,13 @@
 GLAMkit-smartlinks
 ==================
 
-Conditional wiki-style links to Django models. For more information, see the `documentation <http://docs.glamkit.org/smartlinks/>`_.
+Conditional wiki-style links to Django models.
+
+See the documentation in docs/_build/html/index.html
 
 GLAMkit-smartlinks is part of the `GLAMkit framework <http://glamkit.org/>`_.
 
-Dependencies: None
+Dependencies:
+
+  - Django
+  - Sphinx if you desire to build the documentation.
