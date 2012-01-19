@@ -113,6 +113,15 @@ class SmartLinkField(ModelCharField):
             return url() if callable(url) else url
 
         setattr(cls, 'get_%s_url' % self.name, resolve_smartlink_url)
+    
+    def south_field_triple(self):
+        """
+        Return a suitable description of this field for South.
+        """
+        from south.modelsinspector import introspector
+        field_class = 'django.db.models.CharField'
+        args, kwargs = introspector(self)
+        return (field_class, args, kwargs)
 
 
 class SmartLinkFormField(FormsCharField):
