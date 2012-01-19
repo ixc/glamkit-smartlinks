@@ -3,8 +3,6 @@ from django.db import models
 # Test models for tests.
 from django.utils.safestring import SafeString
 
-from smartlinks.fields import SmartLinkField
-
 class PublicMoviesManager(models.Manager):
     def get_query_set(self):
         return super(PublicMoviesManager, self).get_query_set().filter(
@@ -29,3 +27,11 @@ class Movie(models.Model):
 
     def image(self):
         return SafeString("<img />")
+
+# .-notation test for smartlinks.
+class Teacher(models.Model):
+    position = models.CharField(max_length=100)
+    person = models.OneToOneField('Person')
+
+class Person(models.Model):
+    name = models.CharField(max_length=100)

@@ -60,6 +60,12 @@ def register_smart_link(shortcuts, conf):
     # Sanity configuration checks.
     for fieldset in conf.searched_fields:
         for fieldname in fieldset:
+
+            # Lookups including '.' are complicated during
+            # register time.
+            if '.' in fieldname:
+                fieldname = fieldname.split('.')[0]
+
             if fieldname not in ('pk', '__unicode__') and \
                not hasattr(model, fieldname)\
                and not fieldname in model._meta.get_all_field_names():
@@ -90,7 +96,11 @@ def register_smart_link(shortcuts, conf):
     # configuration.
     for name in shortcuts:
         if name in smartlinks_conf:
-            raise AlreadyRegisteredSmartlinkException()
+            raise AlreadyRegisteredSmartlinkException(
+                "While trying to register '%s':\n"
+                "Shortcut '%s' is already defined in "
+                "smartlinks configuration." % (conf, name)
+            )
 
         smartlinks_conf[name] = conf
 

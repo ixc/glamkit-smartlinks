@@ -66,7 +66,7 @@ class SmartLinkField(ModelCharField):
     smartlink. EG in our example you can do::
 
         q = Quote.objects.all()[0]
-        html = q.link_url() # Returns URI, or empty string when resolution fails.
+        url = q.link_url() # Returns URI, or empty string when resolution fails.
 
     Note that the field returns the object URI, and not the rendered
     ``<a href=...></a>`` tag.

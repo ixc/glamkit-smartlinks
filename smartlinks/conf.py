@@ -62,6 +62,26 @@ class SmartLinkConf(object):
     #:      - ``[[ Mad Max 1984 ]]``
     #: Note that the order of the fields in the tuple is significant, eg
     #: ``[[ 1984 Mad Max ]]`` will **not** work.
+    #:
+    #: Also note that it is possible to do more complicated lookups using
+    #: dot-notation. For instance, if you have two models::
+    #:
+    #:      class Teacher(models.Model):
+    #:          position = models.CharField(max_length=100)
+    #:          person = models.OneToOneField('Person')
+    #:
+    #:      class Person(model.Model):
+    #:          name = models.CharField(max_length=100)
+    #:
+    #: And you want to be able to smartlink to the teacher using either his
+    #: position or name the valid configuration would be::
+    #:
+    #:      searched_fields = ('position', 'person.name',)
+    #:
+    #: .. warning:: Dot-notation lookup does not try to be type-safe. If
+    #: you misspell an attribute in the configuration, smartlinks library
+    #: will be throwing ``KeyError`` during resolution time.
+    #:
     #: If you desire a custom logic for the search terms generation,
     #: method py:meth:`_get_search_strings_for_index` is a good candidate for
     #: overwriting.
@@ -337,11 +357,20 @@ class SmartLinkConf(object):
 
             for fieldname in fieldset:
 
-                # Will not throw AttributeError or TypeError, sanity check was
-                # already performed by smartlink configuration.
-                value = getattr(instance, fieldname)
-                if callable(value):
-                    value = value()
+                # Dot-lookups are not guaranteed to resolve properly, because
+                # they are difficult to verify during registration.
+
+                # If the lookup does not include '.', it is safe though --
+                # the sanity check was already performed during configuration.
+                fieldnames = fieldname.split('.')
+                value = instance
+                for fieldname in fieldnames:
+                    try:
+                        value = getattr(value, fieldname)
+                    except AttributeError:
+                        value = instance[fieldname]
+                    if callable(value):
+                        value = value()
 
                 search_string += unicode(value)
 

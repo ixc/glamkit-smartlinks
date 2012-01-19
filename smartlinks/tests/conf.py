@@ -5,7 +5,7 @@ from django.template.context import Context
 from smartlinks.conf import SmartLinkConf
 from smartlinks.models import IndexEntry
 
-from smartlinks.tests.models import Movie
+from smartlinks.tests.models import Movie, Teacher, Person
 
 
 class ConfTest(TestCase):
@@ -169,9 +169,6 @@ class ConfTest(TestCase):
         )
 
         # Non-public movies can not be smartlinked to.
-
-        # TODO -- so apparently our public-queryset
-        # thing isn't working.
         self.assertRaises(
             IndexEntry.DoesNotExist,
             lambda: self.movie_conf.find_object(
@@ -259,4 +256,32 @@ class ConfTest(TestCase):
         self.assertItemsEqual(
             expected_entries,
             [i.value for i in indexed_entries()]
+        )
+
+    def testDotNotationInSearchedFields(self):
+        dot_conf = SmartLinkConf(
+            Teacher.objects,
+            searched_fields=(
+                'person.name',
+            )
+        )
+
+        p = Person.objects.create(
+            name = 'Mark'
+        )
+
+        t = Teacher.objects.create(
+            position = 'None',
+            person = p
+        )
+
+        dot_conf.update_index_for_object(
+            Teacher,
+            t,
+            created=True
+        )
+
+        self.assertEqual(
+            dot_conf.find_object('mark'),
+            t
         )

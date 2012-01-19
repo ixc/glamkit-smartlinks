@@ -321,15 +321,36 @@ specified below:</p>
 </ul>
 </div></blockquote>
 <p>Note that the order of the fields in the tuple is significant, eg
-<tt class="docutils literal"><span class="pre">[[</span> <span class="pre">1984</span> <span class="pre">Mad</span> <span class="pre">Max</span> <span class="pre">]]</span></tt> will <strong>not</strong> work.
-If you desire a custom logic for the search terms generation,
+<tt class="docutils literal"><span class="pre">[[</span> <span class="pre">1984</span> <span class="pre">Mad</span> <span class="pre">Max</span> <span class="pre">]]</span></tt> will <strong>not</strong> work.</p>
+<p>Also note that it is possible to do more complicated lookups using
+dot-notation. For instance, if you have two models:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Teacher</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">position</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">person</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">OneToOneField</span><span class="p">(</span><span class="s">&#39;Person&#39;</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Person</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And you want to be able to smartlink to the teacher using either his
+position or name the valid configuration would be:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">searched_fields</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;position&#39;</span><span class="p">,</span> <span class="s">&#39;person.name&#39;</span><span class="p">,)</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Dot-notation lookup does not try to be type-safe. If</p>
+</div>
+<p>you misspell an attribute in the configuration, smartlinks library
+will be throwing <tt class="docutils literal"><span class="pre">KeyError</span></tt> during resolution time.</p>
+<p>If you desire a custom logic for the search terms generation,
 method py:meth:<cite>_get_search_strings_for_index</cite> is a good candidate for
 overwriting.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="smartlinks.conf.SmartLinkConf.stemming_replace">
-<tt class="descname">stemming_replace</tt><em class="property"> = &lt;_sre.SRE_Pattern object at 0x3171030&gt;</em><a class="headerlink" href="#smartlinks.conf.SmartLinkConf.stemming_replace" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">stemming_replace</tt><em class="property"> = &lt;_sre.SRE_Pattern object at 0x407a030&gt;</em><a class="headerlink" href="#smartlinks.conf.SmartLinkConf.stemming_replace" title="Permalink to this definition">¶</a></dt>
 <dd><p>Regexp to match the characters which are removed during stemming.
 By default all non-alphanumerics are removed.</p>
 </dd></dl>
