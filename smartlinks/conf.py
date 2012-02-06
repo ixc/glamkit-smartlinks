@@ -302,14 +302,11 @@ class SmartLinkConf(object):
         if not deleted and self.queryset.filter(pk=instance.pk):
             # Update the index with new entries.
             for search_string in self._get_search_strings_for_index(instance):
-                try:
-                    IndexEntry.objects.create(
-                        value=search_string,
-                        content_type=content_type,
-                        object_id=instance.pk
-                    )
-                except:
-                    import ipdb; ipdb.set_trace()
+                IndexEntry.objects.create(
+                    value=search_string,
+                    content_type=content_type,
+                    object_id=instance.pk
+                )
 
     def recreate_index(self):
         """
