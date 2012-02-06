@@ -285,3 +285,23 @@ class ConfTest(TestCase):
             dot_conf.find_object('mark'),
             t
         )
+
+    def testTrimming(self):
+        # Trimming should work properly.
+        m = Movie.objects.create(
+            title="Amelie" * 300,
+            slug='amelie',
+            public=True,
+            year=2000
+        )
+
+        self.movie_conf.update_index_for_object(
+            Movie,
+            m,
+            created=True
+        )
+
+        self.assertEqual(
+            self.movie_conf.find_object('Amelie'),
+            m
+        )

@@ -4,7 +4,7 @@ from django.template import Template
 from django.utils.datastructures import SortedDict
 from django.contrib.contenttypes.models import ContentType
 
-from smartlinks.models import IndexEntry
+from smartlinks.models import IndexEntry, INDEX_ENTRY_LEN
 
 #: Configuration global state. Mutable during initialization.
 #:
@@ -85,9 +85,9 @@ class SmartLinkConf(object):
     #: If you desire a custom logic for the search terms generation,
     #: method py:meth:`_get_search_strings_for_index` is a good candidate for
     #: overwriting.
-    searched_fields=('pk', '__unicode__', 'slug', 'title')
+    searched_fields = ('pk', '__unicode__', 'slug', 'title')
 
-    embeddable_attributes=()
+    embeddable_attributes = ()
     """
     Sometimes just getting the link to the referenced object is not enough - we
     might want it's image, videoclip or in general any custom attribute.
@@ -143,7 +143,7 @@ class SmartLinkConf(object):
     #: Template for normal rendering of the smartlink.
     #: Available objects are ``obj``, representing the linked instance,
     #: and ``verbose_text``.
-    template=Template("".join(
+    template = Template("".join(
         ['<a href="{{ obj.%s }}" title="{{ obj }}">' % url_field,
          '{{ verbose_text }}',
          '</a>']
@@ -152,20 +152,20 @@ class SmartLinkConf(object):
     #: Error template used in case the smartlink can not be resolved.
     #: Available object is ``verbose_text``.
     unresolved_template = Template(
-            '<span class="smartlinks-unresolved">{{ verbose_text }}</span>')
+        '<span class="smartlinks-unresolved">{{ verbose_text }}</span>')
 
     #: Error template used in case the model name specified for the smartlink
     #: was not referenced during configuration.
     #: Available object is ``verbose_text``, representing the whole
     #: smartlink.
     model_unresolved_template = Template(
-            '<span class="smartlinks-unresolved">{{ verbose_text }}</span>')
+        '<span class="smartlinks-unresolved">{{ verbose_text }}</span>')
 
     #: Error template for the case when smartlink description corresponds to more then
     #: one entry in the index.
     #: Available object is ``verbose_text``.
     ambiguous_template = Template(
-            '<span class="smartlinks-ambiguous">{{ verbose_text }}</span>')
+        '<span class="smartlinks-ambiguous">{{ verbose_text }}</span>')
 
     #: Error template used in case the attributes of the model which were
     #:    not specified in the 'embeddable_attributes' are being accessed.
@@ -175,18 +175,16 @@ class SmartLinkConf(object):
         '<span class="smartlinks-unallowed">{{ smartlink_text }}</span>')
 
 
-
     def __init__(self,
-        queryset=None,
-        searched_fields=None,
-        embeddable_attributes=(),
-        template=None,
-        unresolved_template=None,
-        model_unresolved_template=None,
-        ambiguous_template=None,
-        disallowed_embed_template=None
-        ):
-
+                 queryset=None,
+                 searched_fields=None,
+                 embeddable_attributes=(),
+                 template=None,
+                 unresolved_template=None,
+                 model_unresolved_template=None,
+                 ambiguous_template=None,
+                 disallowed_embed_template=None
+    ):
         if queryset is not None:
             self.queryset = queryset
 
@@ -196,7 +194,7 @@ class SmartLinkConf(object):
         # Hack to make iteration over fields easier and more unified -
         # strings are turned into one-element tuple.
         self.searched_fields = [f if isinstance(f, tuple)
-                                    else (f,) for f in self.searched_fields]
+                                else (f,) for f in self.searched_fields]
 
         self.embeddable_attributes = embeddable_attributes
 
@@ -254,7 +252,7 @@ class SmartLinkConf(object):
             - :py:class:`IndexEntry`.MultipleObjectsReturned Django exception.
         """
         query = dict(
-            value = self._stem(query),
+            value=self._stem(query),
             content_type=ContentType.objects.get_for_model(self.queryset.model)
         )
 
@@ -295,7 +293,6 @@ class SmartLinkConf(object):
         content_type = ContentType.objects.get_for_model(sender)
 
         if not created or deleted:
-
             # Delete the previously cached objects
             IndexEntry.objects.filter(
                 content_type=content_type,
@@ -303,14 +300,16 @@ class SmartLinkConf(object):
             ).delete()
 
         if not deleted and self.queryset.filter(pk=instance.pk):
-
             # Update the index with new entries.
             for search_string in self._get_search_strings_for_index(instance):
-                IndexEntry.objects.create(
-                    value=search_string,
-                    content_type=content_type,
-                    object_id=instance.pk
-                )
+                try:
+                    IndexEntry.objects.create(
+                        value=search_string,
+                        content_type=content_type,
+                        object_id=instance.pk
+                    )
+                except:
+                    import ipdb; ipdb.set_trace()
 
     def recreate_index(self):
         """
@@ -320,7 +319,7 @@ class SmartLinkConf(object):
         if self.queryset:
             for instance in self.queryset.all():
                 self.update_index_for_object(instance.__class__,
-                                             instance, created=True)
+                    instance, created=True)
 
     def _get_search_strings_for_index(self, instance):
         """
@@ -351,16 +350,15 @@ class SmartLinkConf(object):
 
         # We are using set as we want to avoid the possible duplicates.
         search_strings = set()
-        
+
         for fieldset in self.searched_fields:
             search_string = ''
 
             for fieldname in fieldset:
-
                 # Dot-lookups are not guaranteed to resolve properly, because
                 # they are difficult to verify during registration.
 
-                # If the lookup does not include '.', it is safe though --
+                # The lookups without '.'s are safe --
                 # the sanity check was already performed during configuration.
                 fieldnames = fieldname.split('.')
                 value = instance
@@ -368,7 +366,7 @@ class SmartLinkConf(object):
                     try:
                         value = getattr(value, fieldname)
                     except AttributeError:
-                        value = instance[fieldname]
+                        value = value[fieldname]
                     if callable(value):
                         value = value()
 
@@ -386,8 +384,9 @@ class SmartLinkConf(object):
 
             - Delete all non-alphanumeric characters.
             - Put everything to lower case.
+            - Uses only first :py:data:`INDEX_ENTRY_LEN` characters in the query.
 
         :param query: string-like object.
         :rtype: string
         """
-        return self.stemming_replace.sub("", query).lower()
+        return self.stemming_replace.sub(u"", query).lower()[:INDEX_ENTRY_LEN]

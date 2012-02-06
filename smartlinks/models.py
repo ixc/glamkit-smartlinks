@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
+#: Maximum length of the index entry in the database.
+INDEX_ENTRY_LEN = 300
+
 class IndexEntry(models.Model):
     """
     In order to simplify the smartlink resolution process the index of
@@ -77,7 +80,7 @@ class IndexEntry(models.Model):
     """
 
     # Value after stemming.
-    value = models.CharField(db_index=True, max_length=300)
+    value = models.CharField(db_index=True, max_length=INDEX_ENTRY_LEN)
 
     # Link to the object being smartlinked. To the performance freaks:
     # generic relations are just fine in this case because we don't want JOIN's
