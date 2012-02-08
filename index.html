@@ -1,0 +1,223 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>SMARTLINKS: Documentation &mdash; smartlinks 0.5 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="smartlinks 0.5 documentation" href="#" />
+    <link rel="next" title="Configuration and registration" href="configuration.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="configuration.html" title="Configuration and registration"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">smartlinks 0.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="smartlinks-documentation">
+<h1>SMARTLINKS: Documentation<a class="headerlink" href="#smartlinks-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Smartlinks bring easy, but powerful wiki-style internal links to Django websites.</p>
+<p>Smartlinks give content editors a way to make quick, easy links to other pages, which will
+continue to work even if the target page moves, and will degrade gracefully if the target
+page disappears. With smartlinks, it is even possible to create conditional links to content
+that doesn’t yet exist, but may one day exist - when the target content is published,
+the link automatically activates!</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration and registration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#registration">Registration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#id1">Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fields.html">Smartlink fields</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resolution.html">Resolution</a></li>
+</ul>
+</div>
+<div class="section" id="use-cases">
+<h2>Use cases<a class="headerlink" href="#use-cases" title="Permalink to this headline">¶</a></h2>
+<p>Before diving into the configuration details here is a brief overview of what smartlinks library can
+do for you.</p>
+<blockquote>
+<div><ul>
+<li><p class="first">Links to a Django model. <tt class="docutils literal"><span class="pre">[[</span> <span class="pre">Mad</span> <span class="pre">Max</span> <span class="pre">]]</span></tt> renders to:</p>
+<div class="highlight-html+django"><div class="highlight"><pre><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;/movies/mad_max/&quot;</span> <span class="na">title=</span><span class="s">&quot;Mad Max: Beyond Thunderdome&quot;</span><span class="nt">&gt;</span>Mad Max<span class="nt">&lt;/a&gt;</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Furthermore, verbose text can be specified, as well as the custom model:</p>
+<div class="highlight-html+django"><div class="highlight"><pre>[[ event-&gt;Mad Max | Fan convention ]]
+</pre></div>
+</div>
+</li>
+<li><p class="first">Smartlinks can be used to get an image, or any other media from a model.</p>
+<p><tt class="docutils literal"><span class="pre">{{</span> <span class="pre">Mad</span> <span class="pre">Max</span> <span class="pre">|</span> <span class="pre">image</span> <span class="pre">}}</span></tt> will render to:</p>
+<div class="highlight-html+django"><div class="highlight"><pre><span class="nt">&lt;img</span> <span class="na">src=</span><span class="s">&quot;/media/movies/mad_max.jpg&quot;</span> <span class="na">title=</span><span class="s">&quot;Mad Max: Beyond Thunderdome title image &quot;</span><span class="nt">/&gt;</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Options can be passed for the media we wish to get:</p>
+<div class="highlight-html+django"><div class="highlight"><pre><span class="cp">{{</span> <span class="nv">Mad</span> <span class="nv">Max</span> <span class="o">|</span> <span class="nf">image</span> <span class="o">|</span> <span class="nf">size</span><span class="o">=</span><span class="m">300</span> <span class="o">|</span> <span class="nf">align</span><span class="o">=</span><span class="nv">north</span> <span class="cp">}}</span>
+</pre></div>
+</div>
+<p>Will render to:</p>
+<div class="highlight-html+django"><div class="highlight"><pre><span class="nt">&lt;img</span> <span class="na">src=</span><span class="s">&quot;/media/cache/300/200/mad_max.jpg&quot;</span> <span class="na">title=</span><span class="s">&quot;Mad Max: Beyond Thunderdome title image&quot;</span> <span class="nt">/&gt;</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Smartlinks can be also used to provide glossary lookups inside the text. For instance,</p>
+<p><tt class="docutils literal"><span class="pre">{{</span> <span class="pre">YMCA</span> <span class="pre">|</span> <span class="pre">glossary_definition</span> <span class="pre">}}</span></tt> can be rendered to:</p>
+<div class="highlight-html+django"><div class="highlight"><pre><span class="nt">&lt;abbr</span> <span class="na">title=</span><span class="s">&quot;Young Men Christian Association&quot;</span><span class="nt">&gt;</span>YMCA<span class="nt">&lt;/a&gt;</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="installation-and-configuration">
+<h2>Installation and Configuration<a class="headerlink" href="#installation-and-configuration" title="Permalink to this headline">¶</a></h2>
+<p>Add <tt class="docutils literal"><span class="pre">smartlinks</span></tt> and <tt class="docutils literal"><span class="pre">django.contrib.contenttypes</span></tt> to
+of <tt class="docutils literal"><span class="pre">INSTALLED_APPS</span></tt> in your settings.</p>
+<p>Do <tt class="docutils literal"><span class="pre">./manage.py</span> <span class="pre">syncdb</span></tt> to initialize those.</p>
+<p>Create the initial configuration anywhere in the module which is guaranteed to be
+imported:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">smartlinks</span> <span class="kn">import</span> <span class="n">register</span>
+<span class="kn">from</span> <span class="nn">smartlinks.conf</span> <span class="kn">import</span> <span class="n">IndexConf</span>
+
+<span class="kn">from</span> <span class="nn">myapp.models</span> <span class="kn">import</span> <span class="n">Movie</span><span class="p">,</span> <span class="n">Event</span>
+
+<span class="n">register</span><span class="p">(</span>
+  <span class="p">((</span><span class="s">&#39;m&#39;</span><span class="p">,</span> <span class="s">&#39;movie&#39;</span><span class="p">,),</span> <span class="n">IndexConf</span><span class="p">(</span><span class="n">Movie</span><span class="o">.</span><span class="n">objects</span><span class="p">)),</span>
+  <span class="p">((</span><span class="s">&#39;e&#39;</span><span class="p">,</span> <span class="s">&#39;event&#39;</span><span class="p">,),</span> <span class="n">IndexConf</span><span class="p">(</span><span class="n">Event</span><span class="o">.</span><span class="n">objects</span><span class="p">))</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>If the legacy data is present in the smartlinked models,
+the index should be refreshed using management command: <tt class="docutils literal"><span class="pre">./manage.py</span> <span class="pre">reset_smartlinks_index</span></tt>.</p>
+<p>After that, smartlinks can be used in templates either using filter:</p>
+<div class="highlight-html+django"><div class="highlight"><pre><span class="cp">{%</span> <span class="k">load</span> <span class="nv">smartlinks</span> <span class="cp">%}</span>
+<span class="cp">{{</span> <span class="nv">page.content</span><span class="o">|</span><span class="nf">smartlinks</span> <span class="cp">}}</span>
+</pre></div>
+</div>
+<p>Or a templatetag <tt class="docutils literal"><span class="pre">filter</span></tt> (this one is convenient in your <tt class="docutils literal"><span class="pre">base.html</span></tt>):</p>
+<div class="highlight-html+django"><div class="highlight"><pre><span class="cp">{%</span> <span class="k">load</span> <span class="nv">smartlinks</span> <span class="cp">%}</span>
+
+<span class="cp">{%</span> <span class="k">filter</span> <span class="nf">smartlinks</span> <span class="cp">%}</span>
+    <span class="cp">{%</span> <span class="k">block</span> <span class="nv">content</span> <span class="cp">%}{%</span> <span class="k">endblock</span> <span class="cp">%}</span>
+<span class="cp">{%</span> <span class="k">endfilter</span> <span class="cp">%}</span>
+</pre></div>
+</div>
+<p>which will substitute the references to smartlinks with a corresponding html code.</p>
+<p>Go to the <a class="reference internal" href="configuration.html#configuration"><em>Configuration and registration</em></a> section for more details.</p>
+</div>
+<div class="section" id="resolution-mechanism">
+<h2>Resolution mechanism<a class="headerlink" href="#resolution-mechanism" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="resolution.html#resolution"><em>Resolution</em></a></p>
+</div>
+</div>
+<div class="section" id="misc">
+<h1>Misc<a class="headerlink" href="#misc" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="fields.html#fields"><em>Smartlink fields</em></a></p>
+<ul class="simple">
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">SMARTLINKS: Documentation</a><ul>
+<li><a class="reference internal" href="#use-cases">Use cases</a></li>
+<li><a class="reference internal" href="#installation-and-configuration">Installation and Configuration</a></li>
+<li><a class="reference internal" href="#resolution-mechanism">Resolution mechanism</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#misc">Misc</a></li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="configuration.html"
+                        title="next chapter">Configuration and registration</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="configuration.html" title="Configuration and registration"
+             >next</a> |</li>
+        <li><a href="#">smartlinks 0.5 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Greg Turner, George Karpenkov, Thomas Ashelford.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>
