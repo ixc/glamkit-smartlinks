@@ -73,6 +73,8 @@ class SmartLinkField(ModelCharField):
     """
 
     def __init__(self, verify_exists=False,
+                 max_length=300,
+                 help_text="Enter a valid smartlink",
                  *args, **kwargs):
         """
         :param verify_exists: If this parameter is set to ``True``, and
@@ -80,8 +82,13 @@ class SmartLinkField(ModelCharField):
 
         Inspired by ``UrlField`` behavior.
         """
-        self.verify_exists=verify_exists
+        self.max_length = max_length
+        self.help_text = help_text
+        self.verify_exists = verify_exists
+        self.verify_exists = verify_exists
         super(SmartLinkField, self).__init__(*args,
+                                            max_length = max_length,
+                                            help_text = help_text,
                                              **kwargs)
 
     def formfield(self, **kwargs):
@@ -89,6 +96,7 @@ class SmartLinkField(ModelCharField):
             form_class=SmartLinkFormField,
             max_length=self.max_length,
             verify_exists=self.verify_exists,
+            help_text=self.help_text,
         )
         defaults.update(kwargs)
         return super(SmartLinkField, self).formfield(**defaults)
