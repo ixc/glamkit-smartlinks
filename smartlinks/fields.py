@@ -24,7 +24,7 @@ class SmartLinkValidator(object):
     )
 
     unresolved_message = (
-        u'This smartlink is legal, but it did not resolve '
+        u'This smartlink has correct formatting, but it did not resolve '
         u'to a valid existing object.'
     )
 
@@ -37,6 +37,10 @@ class SmartLinkValidator(object):
 
     def __call__(self, value):
         value = smart_unicode(value.strip())
+
+        if not value:
+            # Do not attempt to verify empty links.
+            return
 
         for parser in (SmartLinkParser, SmartEmbedParser):
             match = parser.finder.match(value)
@@ -162,7 +166,7 @@ class SmartLinkFormField(FormsCharField):
     def to_python(self, value):
         value = value.strip()
 
-        # Assume square brackets.
-        if not value.startswith("["):
+        # Add square brackets if the field is non-empty.
+        if value and not value.startswith("["):
             value = u"[[ %s ]]" % value
         return super(SmartLinkFormField, self).to_python(value)
