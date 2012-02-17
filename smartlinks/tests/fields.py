@@ -5,8 +5,9 @@ from django.db import models
 from smartlinks import register_smart_link
 from smartlinks.fields import SmartLinkFormField, SmartLinkField
 from smartlinks.conf import SmartLinkConf
-
 import smartlinks.conf as conf
+
+from .models import Movie
 
 class MySmartLinkConf(SmartLinkConf):
     def find_object(self, query):
@@ -20,6 +21,8 @@ class SmartLinkFieldTest(TestCase):
         register_smart_link(('z',), MySmartLinkConf(
             queryset=MyModel.objects,
             searched_fields=()))
+
+        register_smart_link(('u'), SmartLinkConf(queryset=Movie.objects, searched_fields=('title',)))
 
     def tearDown(self):
         # Clean global configuration.
@@ -50,3 +53,13 @@ class SmartLinkFieldTest(TestCase):
 
         # No such object => empty string.
         self.assertEqual('', m.get_link_url())
+
+    def testMagicGetObjectField(self):
+        m = Movie.objects.create(
+            title='My Movie',
+            slug='mymovie',
+            year=2001
+        )
+
+        zz = MyModel(link='[[ u->mymovie ]]')
+        self.assertEqual(zz.get_link_object(), m)

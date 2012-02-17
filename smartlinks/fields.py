@@ -66,11 +66,14 @@ class SmartLinkField(ModelCharField):
         class Quote(models.Model):
             link = smartlinks.SmartLinkField()
 
-    Provides ``<fieldname>_url`` method, which will automatically resolve
+    Provides ``get_<fieldname>_url`` method, which will automatically resolve
     smartlink. EG in our example you can do::
 
         q = Quote.objects.all()[0]
         url = q.link_url() # Returns URI, or empty string when resolution fails.
+
+   To get the actual object, use ``get_<fieldname>_object`` method. It
+   will return ``None`` if lookup failed or was ambiguous.
 
     Note that the field returns the object URI, and not the rendered
     ``<a href=...></a>`` tag.
@@ -108,6 +111,19 @@ class SmartLinkField(ModelCharField):
     def contribute_to_class(self, cls, name):
         super(SmartLinkField, self).contribute_to_class(cls, name)
 
+        def resolve_smartlink(instance):
+            """
+            Return the object pointed by the smartlink
+            or None.
+            """
+            link = getattr(instance, self.name)
+            parser = SmartLinkParser(smartlinks_conf)
+            try:
+                return parser.get_smartlinked_object(link)
+            except (IndexEntry.DoesNotExist,
+                    IndexEntry.MultipleObjectsReturned):
+                return None
+
         def resolve_smartlink_url(instance):
             """
             Return the URL of the smartlink.
@@ -124,6 +140,7 @@ class SmartLinkField(ModelCharField):
             url = getattr(obj, conf.url_field, u"")
             return url() if callable(url) else url
 
+        setattr(cls, 'get_%s_object' % self.name, resolve_smartlink)
         setattr(cls, 'get_%s_url' % self.name, resolve_smartlink_url)
     
     def south_field_triple(self):
