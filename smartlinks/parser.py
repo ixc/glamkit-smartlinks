@@ -36,6 +36,12 @@ class Parser(object):
         """
         return self._find_object(self.finder.match(value))
 
+    def get_smartlink_text(self, value):
+        match = self.finder.match(value)
+        query = match.group("Query").strip()
+        return (match.groupdict().get('VerboseText',
+                                             '') or query).strip()
+
     def parse(self, match):
         """
         :param match: Regexp match object.

@@ -66,14 +66,23 @@ class SmartLinkField(ModelCharField):
         class Quote(models.Model):
             link = smartlinks.SmartLinkField()
 
-    Provides ``get_<fieldname>_url`` method, which will automatically resolve
-    smartlink. EG in our example you can do::
+    This fields provides three magic methods:
+
+    ``get_<fieldname>_url`` method, which will automatically resolve
+    smartlink. eg. in our example you can do::
 
         q = Quote.objects.all()[0]
-        url = q.link_url() # Returns URI, or empty string when resolution fails.
+        url = q.get_link_url() # Returns URI, or empty string when resolution fails.
 
-   To get the actual object, use ``get_<fieldname>_object`` method. It
-   will return ``None`` if lookup failed or was ambiguous.
+    ``get_<fieldname>_text`` method, which will automatically resolve
+    smartlink. eg. in our example you can do::
+
+        q = Quote.objects.all()[0]
+        url = q.get_link_text() # Returns text to use in the link.
+
+   To get the actual object referred to by the smartlink, use
+   ``get_<fieldname>_object`` method. It will return ``None`` if lookup failed
+   or was ambiguous.
 
     Note that the field returns the object URI, and not the rendered
     ``<a href=...></a>`` tag.
@@ -140,9 +149,18 @@ class SmartLinkField(ModelCharField):
             url = getattr(obj, conf.url_field, u"")
             return url() if callable(url) else url
 
+        def resolve_smartlink_text(instance):
+            """
+            Return the Text of the smartlink.
+            """
+            link = getattr(instance, self.name)
+            parser = SmartLinkParser(smartlinks_conf)
+            return parser.get_smartlink_text(link) # sets verbose_text
+
         setattr(cls, 'get_%s_object' % self.name, resolve_smartlink)
         setattr(cls, 'get_%s_url' % self.name, resolve_smartlink_url)
-    
+        setattr(cls, 'get_%s_text' % self.name, resolve_smartlink_text)
+
     def south_field_triple(self):
         """
         Return a suitable description of this field for South.
