@@ -134,8 +134,8 @@ class SmartLinkConf(object):
     """
 
     #: Regexp to match the characters which are removed during stemming.
-    #: By default all non-alphanumerics are removed.
-    stemming_replace = re.compile(r"\W")
+    #: By default all non-alphanumerics and underscores are removed.
+    stemming_replace = re.compile(r"[\W_]")
 
     #: Field used to get URL on the instance.
     url_field = "get_absolute_url"
