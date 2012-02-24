@@ -63,3 +63,15 @@ class SmartLinkFieldTest(TestCase):
 
         zz = MyModel(link='[[ u->mymovie ]]')
         self.assertEqual(zz.get_link_object(), m)
+
+        # Correct handling of empty string, None, and
+        # non-resolving string.
+        zz.link = ''
+        self.assertEqual(zz.get_link_object(), None)
+
+        zz.link = None
+        self.assertEqual(zz.get_link_object(), None)
+
+        zz.link = ' '
+        self.assertEqual(zz.get_link_object(), None)
+

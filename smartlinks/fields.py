@@ -116,8 +116,10 @@ class SmartLinkField(ModelCharField):
             Return the object pointed by the smartlink
             or None.
             """
-            link = getattr(instance, self.name)
+            link = (getattr(instance, self.name) or '').strip()
             parser = SmartLinkParser(smartlinks_conf)
+            if not parser.finder.match(link):
+                return None
             try:
                 return parser.get_smartlinked_object(link)
             except (IndexEntry.DoesNotExist,
