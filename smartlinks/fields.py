@@ -141,7 +141,8 @@ class SmartLinkField(ModelCharField):
             """
             link = getattr(instance, self.name)
             parser = SmartLinkParser(smartlinks_conf)
-
+            if not parser.finder.match(link):
+                return ''
             try:
                 obj = parser.get_smartlinked_object(link)
                 conf = parser.conf
@@ -157,6 +158,8 @@ class SmartLinkField(ModelCharField):
             """
             link = getattr(instance, self.name)
             parser = SmartLinkParser(smartlinks_conf)
+            if not parser.finder.match(link):
+                return ''
             return parser.get_smartlink_text(link) # sets verbose_text
 
         setattr(cls, 'get_%s_object' % self.name, resolve_smartlink)
