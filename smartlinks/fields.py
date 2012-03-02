@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db.models.fields import CharField as ModelCharField
 from django.forms.fields import CharField as FormsCharField
 from django.utils.encoding import smart_unicode
+from django import forms
 
 from .parser import SmartEmbedParser, SmartLinkParser, Parser
 from smartlinks.models import IndexEntry
@@ -64,7 +65,6 @@ class SmartLink(object):
     def __init__(self, instance, field_name):
         self.instance = instance
         self.field_name = field_name
-
         self.parser = SmartLinkParser(smartlinks_conf)
 
     @property
@@ -122,7 +122,7 @@ class SmartLink(object):
         """
         Return URL by default.
         """
-        return self.url
+        return self.raw
 
     def __len__(self):
         return len(self.url)
@@ -162,8 +162,6 @@ class SmartLinkField(ModelCharField):
     Usage::
 
         >>> q = Quote(link="[[ Scar Face ]]") # square brackets are optional
-        >>> unicode(q.url) # __unicode__ calls URL and will be called in templates
-        u'/movies/scar-face/'
         >>> q.link.raw
         u'[[ Scar Face ]]'
         >>> q.link.verbose_text
@@ -187,7 +185,6 @@ class SmartLinkField(ModelCharField):
         self.max_length = max_length
         self.help_text = help_text
         self.verify_exists = verify_exists
-        self.verify_exists = verify_exists
         super(SmartLinkField, self).__init__(*args,
                                             max_length = max_length,
                                             help_text = help_text,
@@ -199,6 +196,7 @@ class SmartLinkField(ModelCharField):
             max_length=self.max_length,
             verify_exists=self.verify_exists,
             help_text=self.help_text,
+            widget=SmartLinkWidget,
         )
         defaults.update(kwargs)
         return super(SmartLinkField, self).formfield(**defaults)
@@ -215,7 +213,7 @@ class SmartLinkField(ModelCharField):
         value = self._get_val_from_obj(obj)
         return value.raw
 
-    def get_db_prep_value(self, value, connection=None, prepared=False):
+    def get_prep_value(self, value, connection=None, prepared=False):
         try:
             return value.raw
         except AttributeError:
@@ -231,6 +229,15 @@ class SmartLinkField(ModelCharField):
         return (field_class, args, kwargs)
 
 
+class SmartLinkWidget(forms.Widget):
+    """
+    Custom descriptors require custom classes.
+    """
+    def render(self, name, value, attrs=None):
+        if value is not None:
+            value = value.raw
+        return super(SmartLinkWidget, self).render(name, value, attrs)
+
 class SmartLinkFormField(FormsCharField):
     """
     Form field for a smartlink, for use in forms.
@@ -243,6 +250,8 @@ class SmartLinkFormField(FormsCharField):
     at save time (there is no guarantee though that it will still
     resolve at the render time).
     """
+    widget = SmartLinkWidget
+
     def __init__(self, max_length=None,
                        min_length=None,
                        verify_exists=False,

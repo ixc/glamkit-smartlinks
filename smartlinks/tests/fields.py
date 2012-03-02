@@ -69,7 +69,7 @@ class SmartLinkFieldTest(TestCase):
             year=2001
         )
 
-        self.assertEqual(Template("{{ obj.link }}").render(
+        self.assertEqual(Template("{{ obj.link.url }}").render(
             Context({'obj': LinkModel(link="[[ zzz->my Movie2 ]]")})),
             self.m.get_absolute_url()
         )
