@@ -10,7 +10,7 @@ class Parser(object):
     Abstract base class for smartlink-type functionality.
     """
 
-    # To be overriden by subclasses.
+    # To be overridden by subclasses.
     finder = None
 
     def __init__(self, smartlinks_conf):
@@ -27,17 +27,31 @@ class Parser(object):
 
     def get_smartlinked_object(self, value):
         """
-        :param value: Str or Unicode.
+        :param value: Smartlink, Str or Unicode.
         :rtype: Django model instance
 
-        Get the object smartlinked to.
+        Get the object smartlinked to or ``None``.
 
         :raises: same as :py:meth:`self._find_object`.
         """
-        return self._find_object(self.finder.match(value))
+        match = self.finder.match(value)
+        if match is None:
+            return None
+        try:
+            return self._find_object(match)
+        except NoSmartLinkConfFoundException:
+            return None
 
     def get_smartlink_text(self, value):
+        """
+        :param value: Smartlink, Str or Unicode.
+
+        Return the text of the smartlink or empty
+        string.
+        """
         match = self.finder.match(value)
+        if match is None:
+            return u''
         query = match.group("Query").strip()
         return (match.groupdict().get('VerboseText',
                                              '') or query).strip()
@@ -131,12 +145,11 @@ class Parser(object):
                 # multiple times.
                 if self.conf in seen:
                     continue
-
+                seen.append(self.conf)
                 try:
                     return self.conf.find_object(query)
                 except IndexEntry.DoesNotExist:
                     continue
-                seen.append(self.conf)
 
         # If we have not returned yet, it means that the object does not exist.
         raise IndexEntry.DoesNotExist()

@@ -57,8 +57,79 @@
   <div class="section" id="smartlink-fields">
 <span id="fields"></span><h1>Smartlink fields<a class="headerlink" href="#smartlink-fields" title="Permalink to this headline">¶</a></h1>
 <span class="target" id="module-smartlinks.fields"></span><dl class="class">
+<dt id="smartlinks.fields.SmartLink">
+<em class="property">class </em><tt class="descclassname">smartlinks.fields.</tt><tt class="descname">SmartLink</tt><big>(</big><em>instance</em>, <em>field_name</em><big>)</big><a class="headerlink" href="#smartlinks.fields.SmartLink" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for the smartlink data.</p>
+<dl class="attribute">
+<dt id="smartlinks.fields.SmartLink.object">
+<tt class="descname">object</tt><a class="headerlink" href="#smartlinks.fields.SmartLink.object" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Object the smartlink is pointing to</td>
+</tr>
+</tbody>
+</table>
+<p>or <tt class="docutils literal"><span class="pre">None</span></tt> if it is unresolved.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="smartlinks.fields.SmartLink.raw">
+<tt class="descname">raw</tt><a class="headerlink" href="#smartlinks.fields.SmartLink.raw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setter and getter for the raw data in the
+field.
+:return: Raw smartlink.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="smartlinks.fields.SmartLink.rendered_link">
+<tt class="descname">rendered_link</tt><a class="headerlink" href="#smartlinks.fields.SmartLink.rendered_link" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">rendered <tt class="docutils literal"><span class="pre">&lt;a</span> <span class="pre">href='...'&gt;...&lt;/a&gt;</span></tt> tag.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">SafeString</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="smartlinks.fields.SmartLink.url">
+<tt class="descname">url</tt><a class="headerlink" href="#smartlinks.fields.SmartLink.url" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">URL the smartlink is pointing to,</td>
+</tr>
+</tbody>
+</table>
+<p>or empty string if it is unresolved.
+:rtype: unicode</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="smartlinks.fields.SmartLink.verbose_text">
+<tt class="descname">verbose_text</tt><a class="headerlink" href="#smartlinks.fields.SmartLink.verbose_text" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Verbose text for the smartlink.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="smartlinks.fields.SmartLinkField">
-<em class="property">class </em><tt class="descclassname">smartlinks.fields.</tt><tt class="descname">SmartLinkField</tt><big>(</big><em>verify_exists=False</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#smartlinks.fields.SmartLinkField" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">smartlinks.fields.</tt><tt class="descname">SmartLinkField</tt><big>(</big><em>verify_exists=False</em>, <em>max_length=300</em>, <em>help_text='Enter a valid smartlink'</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#smartlinks.fields.SmartLinkField" title="Permalink to this definition">¶</a></dt>
 <dd><p>Model field for a smartlink, for use in model definitions.
 It can be useful for linking to internal content through one particular
 field, much like internal analogue of <tt class="docutils literal"><span class="pre">UrlField</span></tt>:</p>
@@ -66,14 +137,29 @@ field, much like internal analogue of <tt class="docutils literal"><span class="
     <span class="n">link</span> <span class="o">=</span> <span class="n">smartlinks</span><span class="o">.</span><span class="n">SmartLinkField</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>Provides <tt class="docutils literal"><span class="pre">&lt;fieldname&gt;_url</span></tt> method, which will automatically resolve
-smartlink. EG in our example you can do:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">q</span> <span class="o">=</span> <span class="n">Quote</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">url</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">link_url</span><span class="p">()</span> <span class="c"># Returns URI, or empty string when resolution fails.</span>
+<p>From then one, <tt class="docutils literal"><span class="pre">quote_instance.link</span></tt> will return an instance of
+<a class="reference internal" href="#smartlinks.fields.SmartLink" title="smartlinks.fields.SmartLink"><tt class="xref py py-class docutils literal"><span class="pre">smartlinks.fields.SmartLink</span></tt></a>, which will render to URL of the smartlink
+in the template.</p>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">q</span> <span class="o">=</span> <span class="n">Quote</span><span class="p">(</span><span class="n">link</span><span class="o">=</span><span class="s">&quot;[[ Scar Face ]]&quot;</span><span class="p">)</span> <span class="c"># square brackets are optional</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">unicode</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">url</span><span class="p">)</span> <span class="c"># __unicode__ calls URL and will be called in templates</span>
+<span class="go">u&#39;/movies/scar-face/&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">q</span><span class="o">.</span><span class="n">link</span><span class="o">.</span><span class="n">raw</span>
+<span class="go">u&#39;[[ Scar Face ]]&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">q</span><span class="o">.</span><span class="n">link</span><span class="o">.</span><span class="n">verbose_text</span>
+<span class="go">u&#39;Scar Face&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">q</span><span class="o">.</span><span class="n">link</span><span class="o">.</span><span class="n">rendered_link</span>
+<span class="go">u&#39;&lt;a alt=&quot;scar face&quot; href=&quot;/movies/scar-face-2&quot;&gt;Scar Face&lt;/a&gt;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">q</span><span class="o">.</span><span class="n">link</span><span class="o">.</span><span class="n">object</span>
+<span class="go">&lt;Movie: Scar Face&gt;</span>
 </pre></div>
 </div>
-<p>Note that the field returns the object URI, and not the rendered
-<tt class="docutils literal"><span class="pre">&lt;a</span> <span class="pre">href=...&gt;&lt;/a&gt;</span></tt> tag.</p>
+<dl class="method">
+<dt id="smartlinks.fields.SmartLinkField.south_field_triple">
+<tt class="descname">south_field_triple</tt><big>(</big><big>)</big><a class="headerlink" href="#smartlinks.fields.SmartLinkField.south_field_triple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a suitable description of this field for South.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">

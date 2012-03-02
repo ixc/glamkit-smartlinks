@@ -330,7 +330,7 @@ class SmartLinkConf(object):
             class GlossaryIndexConf(IndexConf):
                 def _get_search_strings_for_index(self, instance):
                     # Note that if that this method is overriden, param
-                    # self.searced_fields becomes redundant.
+                    # self.searched_fields becomes redundant.
 
                     # One entry in index per line.
                     return [self._stem(line) for line in instance.description.split('\n')]
@@ -338,7 +338,7 @@ class SmartLinkConf(object):
         Note how important it is to remember to apply the stemming and to get rid of
         the duplicates - otherwise, :py:class:`IndexEntry` will complain.
 
-        :param instance: Istance returned by :py:meth:`find_object`, usually one which belongs
+        :param instance: Instance returned by :py:meth:`find_object`, usually one which belongs
         to :py:attr:`queryset`.
 
         :return: Set of all string to be added to index.

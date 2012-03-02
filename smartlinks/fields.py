@@ -57,6 +57,95 @@ class SmartLinkValidator(object):
                 raise ValidationError(self.unresolved_message)
 
 
+class SmartLink(object):
+    """
+    Wrapper for the smartlink data.
+    """
+    def __init__(self, instance, field_name):
+        self.instance = instance
+        self.field_name = field_name
+
+        self.parser = SmartLinkParser(smartlinks_conf)
+
+    @property
+    def verbose_text(self):
+        """
+        :return: Verbose text for the smartlink.
+        """
+        return self.parser.get_smartlink_text(self.raw)
+
+    def _get_raw(self):
+        return (self.instance.__dict__[self.field_name] or '').strip()
+    def _set_raw(self, val):
+        setattr(self.instance, self.field_name, val)
+    #: Setter and getter for the raw data in the
+    #: field.
+    #: :return: Raw smartlink.
+    raw = property(_get_raw, _set_raw)
+
+    @property
+    def url(self):
+        """
+        :return: URL the smartlink is pointing to,
+        or empty string if it is unresolved.
+        :rtype: unicode
+        """
+        obj = self.object
+        if obj is None:
+            return u""
+        # Calling ``self.object`` sets ``self.parser.conf``.
+        conf = self.parser.conf
+        url = getattr(obj, conf.url_field, u"")
+        return url() if callable(url) else url
+
+    @property
+    def object(self):
+        """
+        :return: Object the smartlink is pointing to
+        or ``None`` if it is unresolved.
+        """
+        try:
+            return self.parser.get_smartlinked_object(self.raw)
+        except (IndexEntry.DoesNotExist,
+                IndexEntry.MultipleObjectsReturned):
+            return None
+
+    @property
+    def rendered_link(self):
+        """
+        :return: rendered ``<a href='...'>...</a>`` tag.
+        :rtype: SafeString
+        """
+        return self.parser.process_smartlinks(self.raw)
+
+    def __unicode__(self):
+        """
+        Return URL by default.
+        """
+        return self.url
+
+    def __len__(self):
+        return len(self.url)
+
+class SmartLinkDescriptor(object):
+    def __init__(self, field):
+        self.field = field
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            raise AttributeError('Can only be accessed via an instance.')
+        smartlink = instance.__dict__[self.field.name]
+        if smartlink is None:
+            return None
+        return SmartLink(instance, self.field.name)
+
+    def __set__(self, obj, value):
+        if isinstance(value, SmartLink):
+            obj.__dict__[self.field.name] = value.raw
+        else:
+            obj.__dict__[self.field.name] = value
+
+
 class SmartLinkField(ModelCharField):
     """
     Model field for a smartlink, for use in model definitions.
@@ -66,26 +155,23 @@ class SmartLinkField(ModelCharField):
         class Quote(models.Model):
             link = smartlinks.SmartLinkField()
 
-    This fields provides three magic methods:
+    From then one, ``quote_instance.link`` will return an instance of
+    :py:class:`smartlinks.fields.SmartLink`, which will render to URL of the smartlink
+    in the template.
 
-    ``get_<fieldname>_url`` method, which will automatically resolve
-    smartlink. eg. in our example you can do::
+    Usage::
 
-        q = Quote.objects.all()[0]
-        url = q.get_link_url() # Returns URI, or empty string when resolution fails.
-
-    ``get_<fieldname>_text`` method, which will automatically resolve
-    smartlink. eg. in our example you can do::
-
-        q = Quote.objects.all()[0]
-        url = q.get_link_text() # Returns text to use in the link.
-
-   To get the actual object referred to by the smartlink, use
-   ``get_<fieldname>_object`` method. It will return ``None`` if lookup failed
-   or was ambiguous.
-
-    Note that the field returns the object URI, and not the rendered
-    ``<a href=...></a>`` tag.
+        >>> q = Quote(link="[[ Scar Face ]]") # square brackets are optional
+        >>> unicode(q.url) # __unicode__ calls URL and will be called in templates
+        u'/movies/scar-face/'
+        >>> q.link.raw
+        u'[[ Scar Face ]]'
+        >>> q.link.verbose_text
+        u'Scar Face'
+        >>> q.link.rendered_link
+        u'<a alt="scar face" href="/movies/scar-face-2">Scar Face</a>'
+        >>> q.link.object
+        <Movie: Scar Face>
     """
 
     def __init__(self, verify_exists=False,
@@ -119,52 +205,21 @@ class SmartLinkField(ModelCharField):
 
     def contribute_to_class(self, cls, name):
         super(SmartLinkField, self).contribute_to_class(cls, name)
+        setattr(cls, self.name, SmartLinkDescriptor(self))
 
-        def resolve_smartlink(instance):
-            """
-            Return the object pointed by the smartlink
-            or None.
-            """
-            link = (getattr(instance, self.name) or '').strip()
-            parser = SmartLinkParser(smartlinks_conf)
-            if not parser.finder.match(link):
-                return None
-            try:
-                return parser.get_smartlinked_object(link)
-            except (IndexEntry.DoesNotExist,
-                    IndexEntry.MultipleObjectsReturned):
-                return None
+    def pre_save(self, model_instance, add):
+        value = super(SmartLinkField, self).pre_save(model_instance, add)
+        return value.raw
 
-        def resolve_smartlink_url(instance):
-            """
-            Return the URL of the smartlink.
-            """
-            link = getattr(instance, self.name)
-            parser = SmartLinkParser(smartlinks_conf)
-            if not parser.finder.match(link):
-                return ''
-            try:
-                obj = parser.get_smartlinked_object(link)
-                conf = parser.conf
-            except (IndexEntry.DoesNotExist,
-                    IndexEntry.MultipleObjectsReturned):
-                return u""
-            url = getattr(obj, conf.url_field, u"")
-            return url() if callable(url) else url
+    def value_to_string(self, obj):
+        value = self._get_val_from_obj(obj)
+        return value.raw
 
-        def resolve_smartlink_text(instance):
-            """
-            Return the Text of the smartlink.
-            """
-            link = getattr(instance, self.name)
-            parser = SmartLinkParser(smartlinks_conf)
-            if not parser.finder.match(link):
-                return ''
-            return parser.get_smartlink_text(link) # sets verbose_text
-
-        setattr(cls, 'get_%s_object' % self.name, resolve_smartlink)
-        setattr(cls, 'get_%s_url' % self.name, resolve_smartlink_url)
-        setattr(cls, 'get_%s_text' % self.name, resolve_smartlink_text)
+    def get_db_prep_value(self, value, connection=None, prepared=False):
+        try:
+            return value.raw
+        except AttributeError:
+            return value
 
     def south_field_triple(self):
         """

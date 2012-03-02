@@ -20,13 +20,12 @@ settings.configure(DEBUG = True,
        'django.contrib.contenttypes')
 )
 
-#nose.main(argv=None)
+from django.test.simple import DjangoTestSuiteRunner
 
-from django_nose import NoseTestSuiteRunner
-from django.test.simple import run_tests
+test_runner = DjangoTestSuiteRunner(verbosity=1,
+    interactive=True,
+    failfast=False)
+failures = test_runner.run_tests(['smartlinks',], verbosity=1)
 
-failures = run_tests(['smartlinks',], verbosity=1)
 if failures:
     sys.exit(failures)
-
-#NoseTestSuiteRunner().run_tests(['smartlinks'])
