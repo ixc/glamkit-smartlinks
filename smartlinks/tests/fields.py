@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.template.base import Template
 from django.template.context import Context
+from django import forms
 
 from smartlinks import register_smart_link
 from smartlinks.fields import SmartLinkFormField
@@ -91,6 +92,11 @@ class SmartLinkFieldTest(TestCase):
         l.link = u"[[ my hated Movie2 ]]"
         l.save()
         self.assertEqual(
+            l.link.raw,
+            u"[[ my hated Movie2 ]]"
+        )
+
+        self.assertEqual(
             LinkModel.objects.get(pk=pk).link.raw,
             u"[[ my hated Movie2 ]]"
         )
@@ -151,5 +157,27 @@ class SmartLinkFieldTest(TestCase):
 
         self.assertEqual(
             len(self.l.link),
-            len(self.m.get_absolute_url())
+            len(self.l.link.raw)
+        )
+
+    def testModelForm(self):
+        l2 = LinkModel.objects.create(
+            link=u"[[ zombie ]]"
+        )
+        pk = l2.pk
+
+        class LinkForm(forms.ModelForm):
+            class Meta:
+                model = LinkModel
+
+        LinkForm(dict(link=u'astra'), instance=l2).save()
+        self.assertEqual(
+            LinkModel.objects.get(pk=pk).link.raw,
+            u"[[ astra ]]"
+        )
+
+        LinkForm(dict(link=u'[[ omega ]]'), instance=l2).save()
+        self.assertEqual(
+            LinkModel.objects.get(pk=pk).link.raw,
+            u"[[ omega ]]"
         )

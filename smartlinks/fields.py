@@ -4,6 +4,8 @@ from django.db.models.fields import CharField as ModelCharField
 from django.forms.fields import CharField as FormsCharField
 from django.utils.encoding import smart_unicode
 from django import forms
+from django.utils.safestring import SafeData
+from django.contrib.admin.widgets import AdminTextInputWidget
 
 from .parser import SmartEmbedParser, SmartLinkParser, Parser
 from smartlinks.models import IndexEntry
@@ -75,7 +77,7 @@ class SmartLink(object):
         return self.parser.get_smartlink_text(self.raw)
 
     def _get_raw(self):
-        return (self.instance.__dict__[self.field_name] or '').strip()
+        return (self.instance.__dict__[self.field_name] or '')
     def _set_raw(self, val):
         setattr(self.instance, self.field_name, val)
     #: Setter and getter for the raw data in the
@@ -125,7 +127,7 @@ class SmartLink(object):
         return self.raw
 
     def __len__(self):
-        return len(self.url)
+        return len(self.raw)
 
 class SmartLinkDescriptor(object):
     def __init__(self, field):
@@ -229,14 +231,20 @@ class SmartLinkField(ModelCharField):
         return (field_class, args, kwargs)
 
 
-class SmartLinkWidget(forms.Widget):
+class SmartLinkWidget(AdminTextInputWidget):
     """
     Custom descriptors require custom classes.
     """
     def render(self, name, value, attrs=None):
         if value is not None:
-            value = value.raw
+            try:
+                value = value.raw
+            except AttributeError:
+                pass
         return super(SmartLinkWidget, self).render(name, value, attrs)
+
+    def _has_changed(self, initial, data):
+        return True
 
 class SmartLinkFormField(FormsCharField):
     """
@@ -274,3 +282,6 @@ class SmartLinkFormField(FormsCharField):
         if value and not value.startswith("["):
             value = u"[[ %s ]]" % value
         return super(SmartLinkFormField, self).to_python(value)
+
+from django.contrib.admin.options import FORMFIELD_FOR_DBFIELD_DEFAULTS
+FORMFIELD_FOR_DBFIELD_DEFAULTS[SmartLinkField] = {'widget': SmartLinkWidget}
