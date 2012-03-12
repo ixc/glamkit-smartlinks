@@ -276,6 +276,7 @@ class SmartLinkFormField(FormsCharField):
         self.validators.append(SmartLinkValidator(verify_exists))
 
     def to_python(self, value):
+        value = value or ""
         value = value.strip()
 
         # Add square brackets if the field is non-empty.
