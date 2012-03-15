@@ -359,15 +359,17 @@ class SmartLinkConf(object):
                 # the sanity check was already performed during configuration.
                 fieldnames = fieldname.split('.')
                 value = instance
-                for fieldname in fieldnames:
-                    try:
-                        value = getattr(value, fieldname)
-                    except AttributeError:
-                        value = value[fieldname]
-                    if callable(value):
-                        value = value()
 
-                search_string += unicode(value)
+                for fieldname in fieldnames:
+                    if value:
+                        try:
+                            value = getattr(value, fieldname)
+                        except AttributeError:
+                            value = value.get(fieldname)
+                        if callable(value):
+                            value = value()
+
+                    search_string += unicode(value)
 
             # Stemming has to be performed before throwing out duplicated,
             # because otherwise some duplicates can be missed.
