@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
@@ -94,3 +96,29 @@ class IndexEntry(models.Model):
 
     class Meta:
         unique_together = (("value", "content_type", "object_id",),)
+
+class CustomSmartLink(models.Model):
+    """
+    Model which allows user to put in their own smartlinks.
+    """
+
+    shortcuts = models.TextField("Shortcuts for the smartlink",
+        help_text="Please enter one shortcut for the smartlink per line.\n"
+                  "Each [[ shortcut ]] will resolve to the specified URL.",
+        max_length=300)
+    url = models.CharField("Absolute or relative URL",
+        help_text="The URL smartlink will resolve to.",
+        max_length=300)
+
+    description = models.TextField(blank=True,
+        help_text="Optional description for the smartlink.",
+        max_length=1000)
+
+    def get_absolute_url(self):
+        return self.url
+
+    def __unicode__(self):
+        return u"%s → %s" % (
+            ", ".join([u"[[ %s ]]"% s.strip() for s in self.shortcuts.split('\n')]),
+            self.url
+        )

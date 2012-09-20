@@ -119,7 +119,7 @@ class Parser(object):
 
         # Empty configuration -> error.
         if not self.smartlinks_conf:
-            raise NoSmartLinkConfFoundException()
+            raise NoSmartLinkConfFoundException("Please smartlinks.register some SmartLinkConf subclasses.")
 
         # If model is specified, let's try to find it.
         if model and not model in self.smartlinks_conf:
