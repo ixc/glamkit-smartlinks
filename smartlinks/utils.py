@@ -1,12 +1,24 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
+import inspect
 import re
 
 from django.db.models.loading import get_model
 from django.utils.datastructures import SortedDict
 
+# only check once!
+field_names_checked = {}
 def get_field_names(cls):
-    if cls.__base__.__module__.startswith('mongoengine'):
+    full_cls_name = "%s.%s" % (cls.__module__, cls.__name__)
+    is_mongo_based = field_names_checked.get(full_cls_name, None)
+    if is_mongo_based is None:
+        is_mongo_based = len([c
+            for c in inspect.getmro(cls)
+            if c.__base__
+            and c.__base__.__module__.startswith('mongoengine')
+        ]) > 0
+        field_names_checked[full_cls_name] = is_mongo_based
+    if is_mongo_based:
         return cls._fields.keys()
     else:
         return [f.name for f in cls._meta.fields]
@@ -194,5 +206,3 @@ def words2num(s):
         tokens = [t for t in s.split() if not t in ("and", " ")]
         
         return up2million(tokens)
-
-    
