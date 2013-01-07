@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 import re
 
 from django.template import Template
@@ -279,7 +280,7 @@ class SmartLinkConf(object):
         Update index for the updated/deleted/created object.
         Creates/Removes SmartLinkIndex objects.
 
-        This method gets attached to the ``post_save`` and ``delete``
+        This method gets attached to the ``post_save`` and ``post_delete``
         signals by the function :py:func:`register`.
 
         Note that if this method is somehow bypassed while the data is changed - eg
