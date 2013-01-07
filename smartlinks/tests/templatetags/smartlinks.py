@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.template import Context, Template
 
-from ...tests.models import Movie
+from ..models import Movie
 from ...parser import SmartLinkParser
 from ...conf import SmartLinkConf
 from .. import register_smart_link

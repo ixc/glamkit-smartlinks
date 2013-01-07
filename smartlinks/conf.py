@@ -208,6 +208,13 @@ class SmartLinkConf(object):
         if disallowed_embed_template is not None:
             self.disallowed_embed_template = disallowed_embed_template
 
+    def resolve_model(self):
+        if hasattr(self.queryset, 'model'):
+            return self.queryset.model
+        elif callable(self.queryset):
+            return self.queryset().model
+        else:
+            return self.queryset
 
     def find_object(self, query):
         """
@@ -251,9 +258,11 @@ class SmartLinkConf(object):
             - :py:class:`IndexEntry`.DoesNotExist Django exception.
             - :py:class:`IndexEntry`.MultipleObjectsReturned Django exception.
         """
+
+
         query = dict(
             value=self._stem(query),
-            content_type=ContentType.objects.get_for_model(self.queryset.model)
+            content_type=ContentType.objects.get_for_model(self.resolve_model())
         )
 
         try:
@@ -299,7 +308,13 @@ class SmartLinkConf(object):
                 object_id=instance.pk
             ).delete()
 
-        if not deleted and self.queryset.filter(pk=instance.pk):
+        try:
+            qs_instance = self.queryset.filter(pk=instance.pk)
+        except AttributeError:
+            qs_instance = self.queryset().filter(pk=instance.pk)
+
+
+        if not deleted and qs_instance:
             # Update the index with new entries.
             for search_string in self._get_search_strings_for_index(instance):
                 IndexEntry.objects.create(
