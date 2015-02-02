@@ -55,15 +55,14 @@ def register_smart_link(shortcuts, conf):
     """
     # If the queryset supplied does not have a ``model``
     # attribute, use ``queryset`` itself instead.
-    if hasattr(conf.queryset, 'model'):
-        model = conf.queryset.model
-    elif callable(conf.queryset):
-        #try evaluating the queryset and getting the model of that
-        model = conf.queryset().model
+    if hasattr(conf.get_queryset(), 'model'):
+        model = conf.get_queryset().model
+    elif callable(conf.get_queryset()):
+        # Try evaluating the queryset and getting the model of that
+        model = conf.queryset()().model
     else:
-        #Assume we've passed the model
+        # Assume we've passed the model
         model = conf.queryset
-
 
     # Sanity configuration checks.
     for fieldset in conf.searched_fields:
