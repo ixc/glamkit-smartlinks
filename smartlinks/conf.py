@@ -210,15 +210,17 @@ class SmartLinkConf(object):
             self.disallowed_embed_template = disallowed_embed_template
 
     def get_queryset(self):
+        if callable(self.queryset):
+            return self.queryset()
         return self.queryset
 
     def resolve_model(self):
-        if hasattr(self.get_queryset(), 'model'):
-            return self.get_queryset().model
-        elif callable(self.get_queryset()):
-            return self.get_queryset()().model
+        if hasattr(self.queryset, 'model'):
+            return self.queryset.model
+        elif callable(self.queryset):
+            return self.queryset().model
         else:
-            return self.get_queryset()
+            return self.queryset
 
     def find_object(self, query):
         """
@@ -312,10 +314,7 @@ class SmartLinkConf(object):
                 object_id=instance.pk
             ).delete()
 
-        qs_instance = self.get_queryset()
-        if callable(qs_instance):
-            qs_instance = qs_instance()
-        qs_instance = qs_instance.filter(pk=instance.pk)
+        qs_instance = self.get_queryset().filter(pk=instance.pk)
 
         if not deleted and qs_instance:
             # Update the index with new entries.
