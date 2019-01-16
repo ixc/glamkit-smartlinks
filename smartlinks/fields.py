@@ -9,7 +9,7 @@ from django.contrib.admin.widgets import AdminTextInputWidget
 
 from .parser import SmartEmbedParser, SmartLinkParser, Parser
 from smartlinks.models import IndexEntry
-from . import smartlinks_conf
+from smartlinks.conf import smartlinks_conf
 
 class SmartLinkValidator(object):
     """

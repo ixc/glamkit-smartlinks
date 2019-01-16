@@ -2,7 +2,6 @@ import inspect
 
 from django.db.models import signals
 
-from smartlinks.conf import smartlinks_conf
 
 def register(*configurations):
     """
@@ -19,6 +18,7 @@ def register(*configurations):
         )
 
     """
+    from smartlinks.conf import smartlinks_conf
     for (shortcuts, conf) in configurations:
         register_smart_link(shortcuts, conf)
     return smartlinks_conf
@@ -53,6 +53,7 @@ def register_smart_link(shortcuts, conf):
         - IncorrectlyConfiguredSmartlinkException
         - AlreadyRegisteredSmartlinkException
     """
+    from smartlinks.conf import smartlinks_conf
     # If the queryset supplied does not have a ``model``
     # attribute, use ``queryset`` itself instead.
     if hasattr(conf.queryset, 'model'):

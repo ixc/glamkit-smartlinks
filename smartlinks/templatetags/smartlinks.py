@@ -1,6 +1,8 @@
+from __future__ import absolute_import
+
 from django import template
 
-from .. import smartlinks_conf
+from smartlinks.conf import smartlinks_conf
 from ..parser import SmartLinkParser, SmartEmbedParser
 from ..models import IndexEntry
 

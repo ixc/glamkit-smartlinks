@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from django.db import models
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
 
 #: Maximum length of the index entry in the database.
 INDEX_ENTRY_LEN = 300
@@ -89,7 +89,7 @@ class IndexEntry(models.Model):
     # anyway.
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey('content_type', 'object_id')
+    content_object = GenericForeignKey('content_type', 'object_id')
 
     def __unicode__(self):
         return "'%s' for (%s-%s)" % (self.value, self.content_type, self.object_id)
