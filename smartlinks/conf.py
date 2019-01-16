@@ -1,8 +1,9 @@
+from collections import OrderedDict as SortedDict
 from django.db import IntegrityError
+from django.utils.functional import SimpleLazyObject
 import re
 
 from django.template import Template
-from django.utils.datastructures import SortedDict
 from django.contrib.contenttypes.models import ContentType
 
 from smartlinks.models import IndexEntry, INDEX_ENTRY_LEN
@@ -11,6 +12,13 @@ from smartlinks.models import IndexEntry, INDEX_ENTRY_LEN
 #:
 #: Maps model shortcuts to :py:class:`SmartLinkConf` instances.
 smartlinks_conf = SortedDict()
+
+
+# Lazy version of Template, which imports template tag libraries, which import
+# models, which aren't ready yet (Django 1.7+ app loading).
+def lazy_template(template):
+    return SimpleLazyObject(lambda: Template(template))
+
 
 class SmartLinkConf(object):
     """
@@ -144,7 +152,7 @@ class SmartLinkConf(object):
     #: Template for normal rendering of the smartlink.
     #: Available objects are ``obj``, representing the linked instance,
     #: and ``verbose_text``.
-    template = Template("".join(
+    template = lazy_template("".join(
         ['<a href="{{ obj.%s }}" title="{{ obj }}">' % url_field,
          '{{ verbose_text }}',
          '</a>']
@@ -152,27 +160,27 @@ class SmartLinkConf(object):
 
     #: Error template used in case the smartlink can not be resolved.
     #: Available object is ``verbose_text``.
-    unresolved_template = Template(
+    unresolved_template = lazy_template(
         '<span class="smartlinks-unresolved">{{ verbose_text }}</span>')
 
     #: Error template used in case the model name specified for the smartlink
     #: was not referenced during configuration.
     #: Available object is ``verbose_text``, representing the whole
     #: smartlink.
-    model_unresolved_template = Template(
+    model_unresolved_template = lazy_template(
         '<span class="smartlinks-unresolved">{{ verbose_text }}</span>')
 
     #: Error template for the case when smartlink description corresponds to more then
     #: one entry in the index.
     #: Available object is ``verbose_text``.
-    ambiguous_template = Template(
+    ambiguous_template = lazy_template(
         '<span class="smartlinks-ambiguous">{{ verbose_text }}</span>')
 
     #: Error template used in case the attributes of the model which were
     #:    not specified in the 'embeddable_attributes' are being accessed.
     #: Available object is ``smartlink_text``, representing the whole
     #: smartlink.
-    disallowed_embed_template = Template(
+    disallowed_embed_template = lazy_template(
         '<span class="smartlinks-unallowed">{{ smartlink_text }}</span>')
 
 
